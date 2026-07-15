@@ -11,7 +11,7 @@
     "cro": "tsx src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "test": "tsx --test \"src/**/*.test.ts\""
+    "test": "tsx --test src/fault.test.ts src/plan-preflight.test.ts"
   },
   "engines": {
     "node": ">=20"
