@@ -4,6 +4,10 @@ vendor/
 # Local run logs / generated
 localnet/out/*.log
 *.log
+coverage/
+
+# Node (never commit node_modules; CLI lockfile stays tracked)
+node_modules/
 
 # CLI
 cli/node_modules/
