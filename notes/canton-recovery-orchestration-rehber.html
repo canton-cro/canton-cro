@@ -348,23 +348,28 @@
       <h1>Recovery Orchestration</h1>
       <p class="lede">
         Party / participant taşıma ve felaket kurtarmasını elle 13 adımdan
-        (offline replication baseline), tek komutluk güvenli bir orchestration aracına
-        indiren açık kaynak proje. Repo:
+        tek komutluk güvenli bir orchestration aracına indiren açık kaynak proje. Repo:
         <a href="https://github.com/emrhnyz/canton-cro">github.com/emrhnyz/canton-cro</a>.
-        Vibe-coding ile parçalı ilerle; tek prompt’ta her şeyi yaptırma.
+        PoC bitti: adapter GERÇEK Canton'a bağlı, 13 adım canlıda yeşil,
+        gerçek fault drill + kurtarma döngüsü kanıtlı. Sıra grant paketinde.
       </p>
 
       <div class="status-banner" id="durum">
         <h2>Şu an neredeyiz?</h2>
         <p style="margin-bottom:.5rem;">
-          <strong>Sıradaki gerçek iş: Aşama 1</strong> — manuel baseline’ı console’da bir kez koşmak
-          (go/no-go: otomasyon değer var mı?). CLI iskeleti hazır ama Canton’a bağlı değil (stub).
+          <strong>A6 + A7 + A8 tamamlandı (2026-07-16).</strong> Stub dönemi bitti:
+          CLI gerçek Canton 3.5.8'e karşı 13 adımı uçtan uca koşuyor, preflight ortamı
+          canlı yokluyor, fault drill gerçek hata üretip gerçek kurtarma yapıyor.
+          CI'da 3 job da yeşil — <strong>gerçek fault drill GitHub Actions'ta (ubuntu)
+          ilk denemede geçti</strong>. <strong>Sıradaki iş: A9</strong> — demo video +
+          threat-model + runbook; sonra <strong>A5</strong> grant proposal PR.
         </p>
         <div class="progress-track" aria-hidden="true">
-          <div class="progress-fill" style="width: 52%;"></div>
+          <div class="progress-fill" style="width: 88%;"></div>
         </div>
         <p style="font-size:.92rem;color:var(--muted);margin:0 0 1rem;">
-          Kabaca ilerleme: ortam + iskelet + CI drill tamam; gerçek recovery koşumu ve adapter eksik.
+          Kabaca ilerleme: teknik PoC + kanıtlar tamam; kalan iş paketleme (video,
+          threat-model, runbook) ve grant metni.
         </p>
         <table>
           <thead>
@@ -378,44 +383,56 @@
             <tr>
               <td>0A · DA roadmap</td>
               <td><span class="badge badge-partial">Not edildi</span></td>
-              <td>Party-level tooling yakın roadmap’te yok (kullanıcı notu). Yazılı teyit isteğe bağlı.</td>
+              <td>Party-level tooling yakın roadmap'te yok (release notes taraması). Yazılı teyit isteğe bağlı.</td>
             </tr>
             <tr>
               <td>0B · 2-participant ortam</td>
-              <td><span class="badge badge-partial">Kısmi</span></td>
-              <td>Canton OSS native ping OK. Splice/cn-quickstart Docker yok → BLOCKER (opsiyonel).</td>
+              <td><span class="badge badge-done">TAMAM (H2)</span></td>
+              <td><code>cro-topology.conf</code>: H2 file storage. Memory yetmedi — ACS import reddediyor (kritik keşif).</td>
             </tr>
             <tr>
-              <td>1 · Manuel baseline</td>
-              <td><span class="badge badge-next">SIRADA</span></td>
-              <td><code>docs/manual-baseline.md</code> spec var; elle uçtan uca koşulmadı. Fail test: ~20 satır script?</td>
+              <td>1 · Manuel baseline (go/no-go)</td>
+              <td><span class="badge badge-done">TAMAM — GO</span></td>
+              <td>A6 koşumuyla birleşti: 13 adım gerçek console'da doğrulandı. <code>docs/manual-baseline-run-log.md</code>.</td>
             </tr>
             <tr>
               <td>2 · CLI apply/resume</td>
-              <td><span class="badge badge-done">Stub OK</span></td>
-              <td><code>cli/</code> state machine, idempotent, resume. Gerçek Canton yok.</td>
+              <td><span class="badge badge-done">GERÇEK</span></td>
+              <td>Canton runner (<code>runner/canton.ts</code>) ile canlıda yeşil; idempotent no-op kanıtlı.</td>
             </tr>
             <tr>
               <td>3 · plan + preflight</td>
-              <td><span class="badge badge-done">Stub OK</span></td>
-              <td><code>facts.json</code> + baseline kuralları. Probe’lar henüz Canton’dan okunmuyor.</td>
+              <td><span class="badge badge-done">GERÇEK</span></td>
+              <td>A7: 7 canlı probe tek console koşumunda; ölü ortam fail-safe FAIL (asla yeşil görünmez).</td>
             </tr>
             <tr>
               <td>4 · Fault drill + CI</td>
-              <td><span class="badge badge-partial">Stub OK</span></td>
-              <td>broken/partial ACS + diagnosis + GHA. Gerçek ACS import drill yok.</td>
+              <td><span class="badge badge-done">GERÇEK</span></td>
+              <td>A8: gerçek bozuk snapshot → <code>PROTO_DESERIALIZATION_FAILURE</code> → restore → resume → tamam. CI'da yeşil.</td>
             </tr>
             <tr>
-              <td>5 · Grant PR</td>
-              <td><span class="badge badge-todo">Erken</span></td>
-              <td>PoC kanıtı (manuel koşum + live adapter) sonrası.</td>
+              <td>1B · Canton adapter</td>
+              <td><span class="badge badge-done">TAMAM</span></td>
+              <td>Remote console script'leriyle; stub sadece test fallback.</td>
+            </tr>
+            <tr>
+              <td>A9 · Demo + threat model + runbook</td>
+              <td><span class="badge badge-next">SIRADA</span></td>
+              <td>Kanıtlar hazır (fault-drill çıktıları video senaryosunun kendisi).</td>
+            </tr>
+            <tr>
+              <td>5 · Grant PR (A5)</td>
+              <td><span class="badge badge-todo">A9 sonrası</span></td>
+              <td>PoC kanıtı tamam — metin AI-slop kurallarına uyarak yazılacak.</td>
             </tr>
           </tbody>
         </table>
-        <div class="callout warn" style="margin-top:1rem;margin-bottom:0;">
-          <strong>Aşama 1 neden kritik?</strong>
-          Canton genel değil, <em>bu ürün</em> için go/no-go. Elle 13 adımı koşmadan grant veya “production CLI” deme.
-          Stub + CI orchestration iskeletini kanıtlar; operasyonel acıyı ancak manuel koşum ölçer.
+        <div class="callout ok" style="margin-top:1rem;margin-bottom:0;">
+          <strong>Go/no-go sonucu (Aşama 1): GO</strong>
+          Happy path ~15 console satırı AMA değer preflight (memory tuzağını 0. dakikada
+          yakalar) + offset taşıma + resume/idempotency + güvenli durma demetinde.
+          A8 drill'i bunu fiilen kanıtladı: <code>resume</code>'daki config-reload bug'ını
+          drill'in kendisi yakaladı.
         </div>
       </div>
 
@@ -423,12 +440,13 @@
         <a href="#durum">0. Durum</a>
         <a href="#nedir">1. Fikir nedir?</a>
         <a href="#degil">2. Ne değil?</a>
-        <a href="#cikti">3. Ne çıktı?</a>
-        <a href="#asamalar">4. Aşamalar</a>
-        <a href="#ileri">5. Sonraki adımlar</a>
-        <a href="#promptlar">6. Prompt setleri</a>
-        <a href="#grant">7. Grant’e geçiş</a>
-        <a href="#kontrol">8. Kontrol listesi</a>
+        <a href="#kesifler">3. Keşifler</a>
+        <a href="#cikti">4. Ne çıktı?</a>
+        <a href="#asamalar">5. Aşamalar</a>
+        <a href="#ileri">6. Sonraki adımlar</a>
+        <a href="#promptlar">7. Prompt setleri</a>
+        <a href="#grant">8. Grant'e geçiş</a>
+        <a href="#kontrol">9. Kontrol listesi</a>
       </nav>
     </header>
 
@@ -436,7 +454,7 @@
       <h2>1. Fikri insan gibi anlatan metin</h2>
       <div class="card">
         <p>
-          Canton’da her kurum kendi participant’ını (node) çalıştırır; varlıklar ve sözleşmeler
+          Canton'da her kurum kendi participant'ını (node) çalıştırır; varlıklar ve sözleşmeler
           <strong>party</strong> kimliğine bağlıdır. Bir gün node çöker, validator değişir veya
           ortam taşınırsa operatörün yapması gereken şey belli:
           <em>güvenli yedekten doğru şekilde ayağa kaldırmak</em>.
@@ -444,18 +462,18 @@
         <p>
           Bugün bu süreç çoğu yerde <strong>manuel</strong>: onlarca doküman satırı, konsol komutu,
           sırayı kaçırırsan bozulma riski. Özellikle yarım kalan ACS import gibi hatalarda
-          sistem “sessizce yanlış” kalabilir; sonra
+          sistem "sessizce yanlış" kalabilir; sonra
           <code>ACS_COMMITMENT_MISMATCH</code> gibi ağrılı semptomlar çıkar.
         </p>
         <p>
-          <strong>Canton Recovery Orchestration</strong> bunun için ortak, açık kaynak bir araç olacak:
-          planla → doğrula → çalıştır → hata olursa dur/geri al → tatbikatı CI’da tekrarla.
+          <strong>Canton Recovery Orchestration</strong> bunun için ortak, açık kaynak bir araç:
+          planla → doğrula → çalıştır → hata olursa dur/geri al → tatbikatı CI'da tekrarla.
           Cüzdan değil, token değil, site değil — validator operatörlerinin kurtarma kumanda çubuğu.
         </p>
         <div class="callout ok">
           <strong>Grant cümlesi (ezberle)</strong>
-          “Canton’da party/participant recovery hâlâ manuel; biz key’e dokunmadan dry-run migration,
-          backup doğrulama ve restore drill sunan open-source orchestration CLI getiriyoruz.”
+          "Canton'da party/participant recovery hâlâ manuel; biz key'e dokunmadan dry-run migration,
+          backup doğrulama ve restore drill sunan open-source orchestration CLI getiriyoruz."
         </div>
       </div>
 
@@ -463,20 +481,20 @@
         <div class="card">
           <span class="tag tag-ok">Neden bu?</span>
           <ul class="clean">
-            <li>Fon “resilience / operasyonel basitlik / common good” istiyor</li>
+            <li>Fon "resilience / operasyonel basitlik / common good" istiyor</li>
             <li>CWIF gibi key export tuzağı yok</li>
             <li>DEX/cüzdan/SDK rafı kadar dolu değil</li>
-            <li>Demo net: taşı → bilerek boz → yakala → düzelt</li>
+            <li>Demo net: taşı → bilerek boz → yakala → düzelt (A8'de kanıtlandı)</li>
           </ul>
         </div>
         <div class="card">
-          <span class="tag tag-info">Başarı tanımı</span>
+          <span class="tag tag-ok">Başarı tanımı — HEPSİ SAĞLANDI</span>
           <ul class="clean">
-            <li>LocalNet’te uçtan uca recovery senaryosu tek komutla</li>
-            <li>Dry-run (dokunmadan plan)</li>
-            <li>Idempotent + kaldığı yerden devam (resume)</li>
-            <li>Kasten bozuk restore’u otomatik yakalama</li>
-            <li>CI’da koşan drill</li>
+            <li>✅ LocalNet'te uçtan uca recovery senaryosu tek komutla (live-drill.sh)</li>
+            <li>✅ Dry-run (plan mutate etmiyor) + canlı preflight (A7)</li>
+            <li>✅ Idempotent + resume (canlıda kanıtlı)</li>
+            <li>✅ Kasten bozuk import'u otomatik yakalama — GERÇEK hata (A8)</li>
+            <li>✅ CI'da koşan drill'ler (stub + gerçek fault + ping) — 3/3 yeşil</li>
           </ul>
         </div>
       </div>
@@ -486,14 +504,14 @@
       <h2>2. Kapsam duvarı (bunları sakın ekleme)</h2>
       <div class="compare">
         <div class="card">
-          <span class="tag tag-ok">Yapacağız</span>
+          <span class="tag tag-ok">Yaptık</span>
           <ul class="clean">
-            <li>Offline party replication akışının orchestration’ı</li>
-            <li>Preflight kontrolleri (backup tazeliği, flag’ler, vetting…)</li>
-            <li>Dry-run / plan mode</li>
-            <li>Post-condition doğrulama</li>
-            <li>Broken ACS import tatbikatı</li>
-            <li>Runbook + CI pipeline</li>
+            <li>Offline party replication akışının orchestration'ı ✅</li>
+            <li>Preflight kontrolleri — canlı probe'larla ✅</li>
+            <li>Dry-run / plan mode ✅</li>
+            <li>Post-condition doğrulama (export boyutu, ACS assert) ✅</li>
+            <li>Broken ACS import tatbikatı — gerçek ✅</li>
+            <li>Rollback runbook özeti (run-log A8) + CI pipeline ✅</li>
           </ul>
         </div>
         <div class="card">
@@ -502,7 +520,7 @@
             <li>Key / seed / mnemonic export formatı (CWIF öldü)</li>
             <li>Yeni cüzdan veya dApp UI</li>
             <li>Hard domain / synchronizer migration (LSU alanı)</li>
-            <li>Party offboarding “sihirli taşı” (protokolde yok)</li>
+            <li>Party offboarding "sihirli taşı" (protokolde yok)</li>
             <li>Dashboard / observability platformu (COOT tuzağı)</li>
             <li>Genel validator ops süiti</li>
             <li>Decentralized party membership (o ayrı proje)</li>
@@ -511,286 +529,193 @@
       </div>
       <div class="callout warn">
         <strong>COOT uyarısı</strong>
-        Kapsamı “güzel bir ops paneli”ne büyütürsen önceki ölmüş projelerle aynı çukura düşersin.
-        Tek iş: <em>recovery orchestration</em>.
+        Kapsamı "güzel bir ops paneli"ne büyütürsen önceki ölmüş projelerle aynı çukura düşersin.
+        Tek iş: <em>recovery orchestration</em>. A9'da da geçerli: video/threat-model'e
+        dashboard hevesi sokma.
+      </div>
+    </section>
+
+    <section id="kesifler">
+      <h2>3. Koşumdan öğrenilenler (kritik keşifler)</h2>
+      <p>
+        Bunlar docs'ta olmayan, canlı koşumun bulduğu gerçekler. Grant metninde ve yeni
+        agent onboarding'inde birebir kullanılacak — <strong>hepsi kanıtlı</strong>
+        (<code>docs/manual-baseline-run-log.md</code>).
+      </p>
+      <div class="card">
+        <table>
+          <thead>
+            <tr><th>Keşif</th><th>Etki / Çözüm</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Memory storage ACS import'u reddediyor</strong><br />
+              <code>IMPORT_ACS_ERROR ... Use db persistence.</code></td>
+              <td>01-simple-topology yetersiz → <code>localnet/cro-topology.conf</code>
+              (H2 file storage, 07-repair kalıbı, Docker'sız). Preflight'ın değerini tek başına kanıtlayan tuzak.</td>
+            </tr>
+            <tr>
+              <td><strong><code>import scala.util.Try</code> console'da patlıyor</strong><br />
+              TASTy hataları (Scala 2 REPL)</td>
+              <td>Console script'lerinde <code>scala.util._</code> import etme; saf
+              <code>try/catch</code> kullan (probe script'i böyle yazıldı).</td>
+            </tr>
+            <tr>
+              <td><strong><code>resume</code> config'i yeniden okumuyordu</strong> — fault'u
+              tekrar enjekte ediyordu</td>
+              <td>A8 drill'inin kendisi yakaladı; resume artık config.json'ı reload ediyor.
+              "Drill'ler niye var"ın canlı kanıtı.</td>
+            </tr>
+            <tr>
+              <td><strong>partial-acs-import gerçekte deterministik üretilemiyor</strong></td>
+              <td>v1'de açıkça stub-only. Grant metninde iddia BÜYÜTME — sadece
+              broken-snapshot drill'i gerçek.</td>
+            </tr>
+            <tr>
+              <td><strong>Ortam mayınları</strong>: TR-Windows locale (TİME), macOS
+              iCloud/Documents ETIMEDOUT, JAVA_TOOL_OPTIONS boşluklu path</td>
+              <td>Locale pini runner'da otomatik; repo'yu iCloud-senkron klasörde tutma
+              (macOS'ta <code>~/dev</code>); -D değerlerini çift tırnakla. <code>localnet/ISSUES.md</code>.</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </section>
 
     <section id="cikti">
-      <h2>3. Şu an repoda ne var?</h2>
+      <h2>4. Şu an repoda ne var?</h2>
       <div class="card done-box">
-        <h3 style="margin-top:0;">Gerçek repo yapısı (2026-07-15)</h3>
+        <h3 style="margin-top:0;">Gerçek repo yapısı (2026-07-16)</h3>
         <div class="prompt">canton-cro/
-├── README.md                      # durum tablosu + kanıt adımları (A–D)
+├── README.md                      # durum + kanıt adımları (A, B, C, C2, C3, D)
 ├── docs/
-│   └── manual-baseline.md         # 13 adım spec (koşulmadı)
-├── cli/                           # TypeScript CLI (stub runner)
+│   ├── manual-baseline.md         # 13 adım spec (KOŞULDU — run-log'a bakar)
+│   └── manual-baseline-run-log.md # GERÇEK koşum kayıtları: A6 + A7 + A8 ekleri, GO kararı
+├── cli/
 │   ├── src/
-│   │   ├── index.ts               # init, plan, preflight, apply, resume, status, drill
-│   │   ├── machine.ts, state.ts, steps.ts
-│   │   ├── plan.ts, preflight.ts, facts.ts, fault.ts
-│   │   └── runner/stub.ts         # gerçek Canton adapter buraya gelecek
-│   ├── scripts/fault-drill.sh
-│   └── runs/&lt;id&gt;/              # config, facts, state, events, diagnosis (gitignore)
+│   │   ├── index.ts               # init/plan/preflight/apply/resume/status/drill
+│   │   ├── machine.ts             # state machine + safe stop + runner seçimi
+│   │   ├── preflight.ts, facts.ts # kurallar + canlı probe merge
+│   │   ├── fault.ts               # stub + GERÇEK diagnosis üreticileri
+│   │   └── runner/
+│   │       ├── stub.ts            # test fallback
+│   │       ├── canton.ts          # GERÇEK adapter (remote console, CRO_VAR, fault inj.)
+│   │       └── probe.ts           # A7 canlı preflight probe'ları
+│   ├── scripts/
+│   │   ├── fault-drill.sh         # stub drill (CI)
+│   │   ├── live-drill.sh          # GERÇEK 13-adım happy path (A6 kanıtı)
+│   │   └── live-fault-drill.sh    # GERÇEK kır→teşhis→restore→resume (A8 kanıtı)
+│   └── runs/&lt;id&gt;/              # state, facts(probe damgalı), vars, scripts/, logs/, acs/
 ├── localnet/
-│   ├── README.md, CHECKLIST.md, ISSUES.md
-│   ├── health-check.ps1
-│   ├── localnet-drill.sh
-│   └── out/ping-proof.txt         # 2-participant ping kanıtı
-├── .github/workflows/
-│   └── localnet-drill.yml         # CLI test + fault drill + Canton ping job
-├── notes/
-│   ├── canton-recovery-orchestration-rehber.html   # bu sayfa
-│   └── AGENT-HANDOFF-Canton-Recovery.md
-└── vendor/                        # Canton OSS 3.5.8 (local, gitignore)</div>
-        <h3>Kullanıcıya görünen deneyim (bugün)</h3>
-        <div class="prompt">cd cli && npm install && npm run build
+│   ├── cro-topology.conf          # H2 kalıcı 2-participant topoloji (ZORUNLU)
+│   ├── remote-topology.conf       # remote console erişimi
+│   ├── bootstrap-daemon.canton    # daemon bootstrap + CRO_DAEMON_READY
+│   ├── scripts/                   # step0-setup, final-assert, assert-clean-target (.sc)
+│   ├── ISSUES.md                  # 6 gerçek ortam sorunu + fix'leri
+│   └── out/                       # kanıt dosyaları (live-*, fault-*)
+├── .github/workflows/localnet-drill.yml  # 3 job: CLI+stub / ping / GERÇEK fault drill
+└── notes/                         # bu rehber + agent handoff</div>
+        <h3>Kullanıcıya görünen deneyim (bugün — GERÇEK)</h3>
+        <div class="prompt"># Tek komutla uçtan uca gerçek kanıt:
+bash cli/scripts/live-drill.sh        # 13 gerçek adım + idempotency + ACS assert
+bash cli/scripts/live-fault-drill.sh  # kır → teşhis → temizlik kanıtı → restore → resume
 
-# 1) Run başlat
-node dist/index.js init --scenario offline-party-replication
-
-# 2) Plan — hiçbir şeye dokunma
-node dist/index.js plan --run &lt;run-id&gt;
-
-# 3) Preflight (kötü facts ile apply engellenir)
-node dist/index.js preflight --run &lt;run-id&gt;
-
-# 4) Çalıştır (stub adımlar)
-node dist/index.js apply --run &lt;run-id&gt;
-
-# 5) Yarıda kaldıysa
-node dist/index.js resume --run &lt;run-id&gt;
-
-# 6) Tatbikat (stub ACS fault)
-node dist/index.js drill --run &lt;run-id&gt; --fault broken-acs-import</div>
-        <div class="callout info">
-          <strong>Stub vs gerçek</strong>
-          Şu an adımlar <code>runner/stub.ts</code> ile simüle ediliyor. Production recovery için
-          Canton Admin API / ACS export-import adapter gerekir (Aşama 1B sonrası).
-        </div>
+# El ile:
+cro init --run r1 --party-id &lt;id&gt; --runner canton \
+  --canton-bin &lt;bin&gt; --remote-conf localnet/remote-topology.conf \
+  --dar-path &lt;dar&gt; --storage-kind h2
+cro plan --run r1        # dokunmadan liste
+cro preflight --run r1   # CANLI probe (A7) — ölü ortam asla PASS almaz
+cro apply --run r1       # gerçek adımlar
+cro resume --run r1      # kaldığı yerden (config reload'lu)</div>
       </div>
     </section>
 
     <section id="asamalar">
-      <h2>4. Aşama aşama yol haritası</h2>
-      <p>
-        Aşağıdaki sıralama bilinçli. Her aşamanın sonunda <strong>somut çıktı</strong> olmalı.
-        Sonraki aşamaya geçmeden önceki “bitti kriteri”ni tamamla.
-      </p>
+      <h2>5. Aşama aşama yol haritası</h2>
 
       <div class="phase card">
-        <div class="phase-num">AŞAMA 0 · 2–7 gün (ortam zorluğu değişken)</div>
-        <span class="phase-status"><span class="badge badge-partial">Kısmi tamam</span></span>
-        <h3>Roadmap teyidi + ortam + kavramsal netlik</h3>
+        <div class="phase-num">AŞAMA 0 · TAMAM</div>
+        <span class="phase-status"><span class="badge badge-done">Tamam (H2 ile)</span></span>
+        <h3>Roadmap teyidi + ortam</h3>
+        <div class="callout info">
+          <strong>2026-07-16 durum</strong>
+          0A: release notes'ta party-level recovery izi yok (yazılı teyit hâlâ isteğe bağlı, A5 öncesi güzel olur).
+          0B: H2 kalıcı topoloji ile TAMAM — memory keşfi yüzünden simple-topology terk edildi.
+          Splice/Docker cn-quickstart hâlâ opsiyonel BLOCKED; PoC için gerekmedi.
+        </div>
+      </div>
+
+      <div class="phase card">
+        <div class="phase-num">AŞAMA 1 · TAMAM (A6 koşumuyla)</div>
+        <span class="phase-status"><span class="badge badge-done">GO</span></span>
+        <h3>Manuel baseline (go/no-go)</h3>
+        <div class="callout ok">
+          <strong>2026-07-16 durum</strong>
+          13 adım gerçek console'da tek tek koşturulup doğrulandı (adapter geliştirmesiyle
+          birleşik). Assert boşlukları kapandı, 3.5 imzaları teyitli.
+          "20 satır script" fail testinin dürüst cevabı run-log'da: happy path script'lenir,
+          değer preflight+resume+safe-stop+drill demetinde. <strong>Karar: GO.</strong>
+        </div>
+      </div>
+
+      <div class="phase card">
+        <div class="phase-num">AŞAMA 2-3-4 · TAMAM (GERÇEK)</div>
+        <span class="phase-status"><span class="badge badge-done">Stub → GERÇEK</span></span>
+        <h3>apply/resume + plan/preflight + fault drill</h3>
+        <div class="callout ok">
+          <strong>2026-07-16 durum</strong>
+          Üç aşama da artık gerçek Canton'da: canton runner (A6), canlı probe'lar (A7),
+          gerçek fault drill + kurtarma döngüsü (A8). Unit testler 23/23; stub yalnızca
+          test fallback. CI 3 job: stub drill, 2-participant ping, GERÇEK fault drill —
+          üçü de yeşil (ubuntu, artifact'lı).
+        </div>
+      </div>
+
+      <div class="phase card">
+        <div class="phase-num">AŞAMA A9 · SIRADA</div>
+        <span class="phase-status"><span class="badge badge-next">ŞİMDİ BUNU YAP</span></span>
+        <h3>Demo video + threat model + runbook (grant paketlemesi)</h3>
         <div class="meta-row">
-          <span class="pill">önce: DA roadmap sorusu</span>
-          <span class="pill">sonra: 2-participant LocalNet</span>
+          <span class="pill">amaç: kanıtı anlatılabilir yap</span>
+          <span class="pill">çıktı: video + threat-model.md + runbook.md</span>
         </div>
-
-        <div class="callout danger">
-          <strong>0A · DA roadmap sorusu (bedava, ~1 gün) — PoC’den ÖNCE</strong>
-          Champion işi değil. Soru: party-level recovery / replication orchestration
-          DA’nın yakın Splice sürümünde geliyor mu?<br /><br />
-          Kime: Itai Segall / Wayne Collier (veya Node Ops / Party Portability çevresi).<br />
-          Tek cümle: <em>“Party-level replication/recovery orchestration Splice 3.5+ roadmap’inizde mi?”</em><br /><br />
-          Cevap “geliyor / zaten yapıyoruz” ise: <strong>dur</strong>. 4 haftalık PoC çöp olur.
-          Hard Migration #294 tam bundan öldü (eski docs’a göre yazıldı, Splice çözmüştü).<br />
-          Cevap “yok / bizde değil” veya sessizlik + release notes’ta iz yok: devam.
-        </div>
-
-        <p><strong>0B · Ortam (roadmap “yok” dedikten sonra)</strong></p>
-        <ol class="clean">
-          <li>Resmi Canton / Splice LocalNet dokümanını bul (cn-quickstart / mevcut local stack).</li>
-          <li>İki bağımsız participant’lı topolojiyi kaldır (recovery senaryosunun gerçek ön koşulu bu).</li>
-          <li>Party, participant, ACS, topology kelimelerini kendi cümlelerinle not et.</li>
-          <li>Bu rehberdeki “yapmayacağız” listesini README’ye kilitle.</li>
-        </ol>
-        <div class="callout warn">
-          <strong>Darboğaz (erken bil)</strong>
-          Standart LocalNet / cn-quickstart genelde tek-container, sabit topoloji ile gelir.
-          Party replication için iki bağımsız participant çoğu zaman elle HOCON / compose
-          ister. canton-compose (#93) bunu birebir problem olarak tanımlamış:
-          advanced topologies hand-wired. <strong>2-participant topoloji kurulamıyorsa
-          önce onu çöz; PoC’nin gerçek ön koşulu budur.</strong> Kurulum 1–2 gün değil,
-          bir haftaya yayılabilir. Kurulamıyorsa sonraki tüm aşamalar tıkanır.
-        </div>
+        <ul class="clean">
+          <li><strong>Video (2-4 dk):</strong> senaryo hazır — live-fault-drill.sh'ın akışı
+          birebir storyboard: taşı → boz → gerçek hata → güvenli dur → temizlik kanıtı →
+          restore → resume → tamam.</li>
+          <li><strong>docs/threat-model.md:</strong> key'e dokunmuyoruz (hangi API'lere
+          dokunuyoruz: admin/ledger API, ACS dosyaları, topology tx); fail-safe preflight
+          felsefesi.</li>
+          <li><strong>docs/runbook.md:</strong> run-log A8'deki rollback özetinin
+          genişletilmiş operatör prosedürü.</li>
+        </ul>
         <div class="callout info">
           <strong>Bitti kriteri</strong>
-          DA roadmap cevabı not edildi (veya yazılı teyit denemesi yapıldı);
-          <em>iki participant</em> LocalNet ayakta ve birbirini görebiliyor;
-          recovery docs linkleri bir dosyada toplu.
-        </div>
-        <div class="callout info" style="margin-top:.75rem;">
-          <strong>2026-07-15 gerçek durum</strong>
-          0A: kullanıcı notu “yakında gelmiyor”. 0B: Canton OSS 3.5.8 native
-          <code>01-simple-topology</code> ile participant1/2 ping OK
-          (<code>localnet/out/ping-proof.txt</code>). Windows TR locale için
-          <code>JAVA_TOOL_OPTIONS=-Duser.language=en -Duser.country=US</code> gerekli.
-          Docker/Splice cn-quickstart kurulamadı (BLOCKER, opsiyonel ileride).
+          Video linki README'de; threat-model + runbook repo'da; hepsi mevcut kanıt
+          dosyalarına referanslı (yeni iddia üretme, olanı anlat).
         </div>
       </div>
 
       <div class="phase card">
-        <div class="phase-num">AŞAMA 1 · Hafta 1</div>
-        <span class="phase-status"><span class="badge badge-next">SIRADA</span></span>
-        <h3>Manuel baseline (en kritik aşama — go/no-go)</h3>
-        <div class="meta-row">
-          <span class="pill">amaç: acıyı ölç</span>
-          <span class="pill">çıktı: 13-adım defteri</span>
-        </div>
-        <p>
-          Henüz tool yazma. Offline party replication / backup-restore senaryosunu
-          <strong>elle</strong> bir kez baştan sona yap. Her adım için yaz:
-        </p>
-        <ul class="clean">
-          <li>Komut / UI / doküman adımı</li>
-          <li>Ön koşul (pre-condition)</li>
-          <li>Son koşul (post-condition) — nasıl “başarılı”yı ölçtün?</li>
-          <li>Yanlış yapılırsa ne olur?</li>
-        </ul>
-        <div class="callout warn">
-          <strong>Fail koşulu (fikri öldüren test)</strong>
-          Eğer tüm akış mevcut bir bootstrap script’iyle ~20 satırda zaten kolayca çözülüyorsa,
-          otomasyon değeri yok demektir — scope’u yeniden düşün veya bırak.
-        </div>
-        <div class="callout ok">
-          <strong>Bitti kriteri</strong>
-          <code>docs/manual-baseline.md</code> dosyası dolu; her adımın pre/post condition’ı makine-okunur
-          (sonraki kod bunları assert edecek).
-        </div>
-        <div class="callout warn" style="margin-top:.75rem;">
-          <strong>2026-07-15 gerçek durum</strong>
-          Spec yazıldı (13 adım, birçok assert “bilinmiyor / doğrulanacak”).
-          <strong>Elle uçtan uca koşulmadı.</strong> Sıradaki iş: console’da bir kez yap, sonuçları
-          <code>docs/manual-baseline-run-log.md</code> (veya adım notları) olarak kaydet.
-        </div>
-      </div>
-
-      <div class="phase card">
-        <div class="phase-num">AŞAMA 2 · Hafta 2</div>
-        <span class="phase-status"><span class="badge badge-done">Stub tamam</span></span>
-        <h3>Tek happy-path komutu (iske + resume)</h3>
-        <div class="meta-row">
-          <span class="pill">amaç: wrapper değil, orchestration</span>
-          <span class="pill">çıktı: cro apply</span>
-        </div>
-        <p><strong>Ne yazılacak?</strong></p>
-        <ul class="clean">
-          <li>Adım makinesi (state machine): step-1 … step-N</li>
-          <li>Her adım sonrası state kaydı (hangi adım tamam?)</li>
-          <li>Ortalarda kırılınca <code>resume</code> ile kaldığı yerden devam</li>
-          <li>Aynı komutu ikinci kez çalıştırınca güvenli no-op (idempotent)</li>
-        </ul>
-        <div class="callout ok">
-          <strong>Bitti kriteri</strong>
-          Happy path LocalNet’te uçtan uca yeşil. Ortada process kill edip <code>resume</code> ile bitirebiliyorsun.
-          README’de 3 dakikalık “manuel vs otomatik” anlatımı var.
-        </div>
-        <div class="callout info" style="margin-top:.75rem;">
-          <strong>2026-07-15 gerçek durum</strong>
-          <code>cli/</code> TypeScript CLI: state machine, apply, resume, idempotent tekrar, runs/&lt;id&gt;/ state.
-          Stub runner ile yeşil. Gerçek Canton adımları henüz bağlı değil.
-        </div>
-      </div>
-
-      <div class="phase card">
-        <div class="phase-num">AŞAMA 3 · Hafta 3</div>
-        <span class="phase-status"><span class="badge badge-done">Stub tamam</span></span>
-        <h3>Dry-run + preflight</h3>
-        <div class="meta-row">
-          <span class="pill">amaç: dokunmadan plan</span>
-          <span class="pill">çıktı: cro plan / preflight</span>
-        </div>
-        <p>Preflight örnekleri (dokümana göre uyarlanır):</p>
-        <ul class="clean">
-          <li>Backup yaşı / tazelik penceresi</li>
-          <li>Onboarding / migration flag’leri</li>
-          <li>Pruning penceresi uygun mu?</li>
-          <li>Package vetting durumu</li>
-          <li>Hedef participant sağlığı</li>
-        </ul>
-        <p>
-          <code>plan</code> komutu hiçbir mutate etmeden “şunu yapacağım” listesini basmalı.
-        </p>
-        <div class="callout ok">
-          <strong>Bitti kriteri</strong>
-          Kasıtlı kötü preflight’ta (eski backup vs.) komut net hata veriyor; iyi durumda plan çıktısı okunaklı.
-        </div>
-        <div class="callout info" style="margin-top:.75rem;">
-          <strong>2026-07-15 gerçek durum</strong>
-          <code>plan</code>, <code>preflight</code> komutları + baseline kuralları + <code>facts.json</code>.
-          Kötü facts ile apply engelleniyor. Probe’lar stub; Canton’dan okuma yok.
-        </div>
-      </div>
-
-      <div class="phase card">
-        <div class="phase-num">AŞAMA 4 · Hafta 4</div>
-        <span class="phase-status"><span class="badge badge-partial">Stub tamam</span></span>
-        <h3>Fault drill + CI</h3>
-        <div class="meta-row">
-          <span class="pill">amaç: değeri kanıtla</span>
-          <span class="pill">çıktı: cro drill + GitHub Action</span>
-        </div>
-        <p>
-          Bilerek yarım / bozuk ACS import üret. Araç
-          mismatch’i (veya dokümandaki eşdeğer hatayı) yakalasın,
-          net teşhis + güvenli durma / rollback yolu göstersin.
-        </p>
-        <div class="callout danger">
-          <strong>Fail koşulu</strong>
-          Mismatch’i deterministik üretemiyor veya yakalayamıyorsan — “console script wrapper”
-          itirazı haklı çıkar. Grant öncesi bunu çöz veya beyanı küçült.
-        </div>
-        <div class="callout ok">
-          <strong>Bitti kriteri</strong>
-          CI’da yeşil drill; kısa demo video (2–4 dk); threat-model notu (“key’e dokunmuyoruz”).
-        </div>
-        <div class="callout info" style="margin-top:.75rem;">
-          <strong>2026-07-15 gerçek durum</strong>
-          <code>broken-acs-import</code>, <code>partial-acs-import</code> fault + diagnosis + güvenli durma.
-          <code>.github/workflows/localnet-drill.yml</code> (CLI test + fault drill + Canton ping).
-          README kanıt adımları A–D. Demo video ve threat-model henüz yok. Gerçek ACS mismatch drill yok.
-        </div>
-      </div>
-
-      <div class="phase card">
-        <div class="phase-num">AŞAMA 1B · Manuel sonrası</div>
+        <div class="phase-num">AŞAMA 5 (A5) · A9 SONRASI</div>
         <span class="phase-status"><span class="badge badge-todo">Bekliyor</span></span>
-        <h3>Canton adapter (gerçek export/import)</h3>
-        <div class="meta-row">
-          <span class="pill">amaç: stub’tan çık</span>
-          <span class="pill">çıktı: runner/canton.ts</span>
-        </div>
-        <p>
-          Manuel baseline go/no-go geçtikten sonra: önce <code>export_acs</code> + <code>import_acs</code>
-          happy path’i gerçek Admin API ile bağla. Sonra preflight probe’ları Canton’dan oku.
-          En son gerçek broken ACS drill.
-        </p>
-        <div class="callout ok">
-          <strong>Bitti kriteri</strong>
-          LocalNet’te stub olmadan apply/resume yeşil; en az bir adım gerçek Canton çıktısı assert ediyor.
-        </div>
-      </div>
-
-      <div class="phase card">
-        <div class="phase-num">AŞAMA 5 · Grant paketi</div>
-        <span class="phase-status"><span class="badge badge-todo">Erken</span></span>
-        <h3>Proposal + milestone metni</h3>
+        <h3>Grant proposal PR</h3>
         <div class="meta-row">
           <span class="pill">hedef bant: 400–650k CC</span>
           <span class="pill">3 milestone</span>
         </div>
         <ol class="clean">
-          <li><code>canton-dev-fund</code> template’ini doldur (tek objective).</li>
+          <li><code>canton-dev-fund</code> template'ini doldur (tek objective).</li>
           <li>Adoption kriteri yaz (örn. NaaS/validator dry-run, CI kullanan repo sayısı).</li>
-          <li>COOT / Migration Lens / Decentralization Manager ile 1’er cümle ayrım.</li>
-          <li>PR aç → ihtiyaç halinde <code>needs-champion</code> sürecine gir.</li>
+          <li>COOT / Migration Lens / Decentralization Manager ile 1'er cümle ayrım.</li>
+          <li>PR aç → <code>needs-champion</code> süreci (kullanıcı ayrıca yürütüyor).</li>
         </ol>
         <div class="callout info">
-          <strong>Önerilen 3 milestone iskeleti</strong>
+          <strong>Önerilen 3 milestone iskeleti (güncel)</strong>
           <ol class="clean">
-            <li>M1: Offline party replication orchestration + resume + docs</li>
-            <li>M2: Preflight/plan + fault drill + CI</li>
+            <li>M1: Offline party replication orchestration + resume + canlı preflight — <em>büyük kısmı ŞİMDİDEN KANITLI (hızlandırıcı olarak sun)</em></li>
+            <li>M2: Gerçek backup/restore (Postgres pg_dump yolu) + genişletilmiş drill matrisi + Windows/Splice doğrulaması</li>
             <li>M3: 2+ harici operatör/NaaS adoption + hardening</li>
           </ol>
         </div>
@@ -798,10 +723,7 @@ node dist/index.js drill --run &lt;run-id&gt; --fault broken-acs-import</div>
     </section>
 
     <section id="ileri">
-      <h2>5. Sıradaki adımlar (net sıra)</h2>
-      <p>
-        Stub iskelet bitti; grant öncesi gerçek kanıt sırası aşağıdaki gibi. Her satır bir vibe-coding turu.
-      </p>
+      <h2>6. Sıradaki adımlar (net sıra)</h2>
       <table>
         <thead>
           <tr>
@@ -814,72 +736,60 @@ node dist/index.js drill --run &lt;run-id&gt; --fault broken-acs-import</div>
         <tbody>
           <tr>
             <td>1</td>
-            <td><strong>Manuel baseline koş</strong> — console’da 13 adım, go/no-go</td>
+            <td><strong>Demo video + threat-model.md + runbook.md</strong></td>
             <td><span class="badge badge-next">Şimdi</span></td>
-            <td>A1b</td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td>Run log + “20 satır script” fail testi sonucu</td>
-            <td>1’den hemen sonra</td>
-            <td>A1b (devam)</td>
-          </tr>
-          <tr>
-            <td>3</td>
-            <td>Canton adapter: export_acs + import_acs happy path</td>
-            <td>Go/no-go geçerse</td>
-            <td>A6</td>
-          </tr>
-          <tr>
-            <td>4</td>
-            <td>Preflight probe’ları Canton’dan oku</td>
-            <td>Adapter v1 sonrası</td>
-            <td>A7</td>
-          </tr>
-          <tr>
-            <td>5</td>
-            <td>Gerçek broken ACS drill (stub değil)</td>
-            <td>Live import sonrası</td>
-            <td>A8</td>
-          </tr>
-          <tr>
-            <td>6</td>
-            <td>Demo video + threat-model.md</td>
-            <td>Grant öncesi</td>
             <td>A9</td>
           </tr>
           <tr>
-            <td>7</td>
-            <td>Grant proposal PR</td>
-            <td>PoC kanıtı tamam</td>
+            <td>2</td>
+            <td>Grant proposal taslağı (AI-slop kurallarıyla) + PR</td>
+            <td>A9 sonrası</td>
             <td>A5</td>
           </tr>
           <tr>
+            <td>3</td>
+            <td>needs-champion süreci / SIG iletişimi</td>
+            <td>PR sonrası</td>
+            <td>— (kullanıcı yürütüyor)</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>(ops.) DA'ya yazılı roadmap teyidi</td>
+            <td>A5 öncesi güzel olur</td>
+            <td>A0a</td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td>(ops.) Windows'ta live-drill doğrulaması (PowerShell muadili)</td>
+            <td>Paralel</td>
             <td>—</td>
-            <td>Docker → cn-quickstart LocalNet (opsiyonel)</td>
+          </tr>
+          <tr>
+            <td>6</td>
+            <td>(ops.) Postgres backup yolu (gerçek pg_dump + restore) — grant M2 işi</td>
+            <td>Grant sonrası / M2</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td>7</td>
+            <td>(ops.) Docker → cn-quickstart Splice LocalNet</td>
             <td>Paralel / sonra</td>
             <td>A0b (retry)</td>
           </tr>
         </tbody>
       </table>
-      <div class="callout ok">
-        <strong>Go/no-go kuralı (Aşama 1)</strong>
-        Bu aşama “Canton değerli mi?” değil, “recovery orchestration otomasyonu değerli mi?” sorusunu cevaplar.
-        Elle koşum kolay ve risksizse scope küçült veya bırak. Stub CI yeşil olsa bile yeterli değil.
-      </div>
     </section>
 
     <section id="promptlar">
-      <h2>6. Vibe-coding: sırayla kullanılacak prompt’lar</h2>
+      <h2>7. Vibe-coding: prompt setleri</h2>
       <p>
-        Her kutuyu <strong>ayrı sohbette / ayrı turda</strong> kullan. “Hepsini birden yap” deme.
         <span class="badge badge-done">Tamam</span> olanları tekrar koşma; sıradaki
-        <span class="badge badge-next">SIRADA</span> olanı kullan.
+        <span class="badge badge-next">SIRADA</span> olanı kullan. Her kutu ayrı sohbette.
       </p>
 
       <div class="card" style="margin-bottom:1rem;">
         <span class="tag tag-ok">Prompt A0a — DA roadmap</span>
-        <span class="badge badge-partial">Not edildi</span>
+        <span class="badge badge-partial">Not edildi (yazılı teyit ops.)</span>
         <div class="prompt">Kısa mail / Slack / forum mesajı taslağı yaz.
 
 Alıcı bağlamı: Digital Asset / Splice maintainers (Itai Segall veya Wayne Collier).
@@ -894,200 +804,100 @@ Kurallar:
       </div>
 
       <div class="card" style="margin-bottom:1rem;">
-        <span class="tag tag-ok">Prompt A0b — Ortam</span>
-        <span class="badge badge-partial">Kısmi (native OK)</span>
-        <div class="prompt">Canton Recovery Orchestration için LocalNet kurma aşamasındayız.
-DA roadmap teyidi: party-level recovery tooling yakında gelmiyor (not edilmiş).
+        <span class="tag tag-ok">Prompt A0b + A1 + A1b + A2 + A3 + A4 — TAMAMLANDI</span>
+        <span class="badge badge-done">Arşiv</span>
+        <div class="prompt">TAMAMLANDI (2026-07-15/16). Çıktılar:
+- 0B: H2 kalıcı 2-participant topoloji (cro-topology.conf) + daemon/remote split
+- A1/A1b: docs/manual-baseline.md + manual-baseline-run-log.md (GERÇEK koşum, GO)
+- A2: cli/ state machine, apply/resume, idempotent, runs/&lt;id&gt;/
+- A3: plan + preflight + facts.json
+- A4: stub fault drill + CI
 
-GÖREV: İKİ BAĞIMSIZ PARTICIPANT'lı topoloji kur (tek-container varsayılan LocalNet yetmez).
-cn-quickstart / standart LocalNet fixed topology ile geliyorsa: HOCON veya compose ile
-hand-wire et. canton-compose #93 bu problemi tarif ediyor - advanced topology gerekir.
-
-KISIT: Recovery tool kodu yazma. Sadece ortam + doğrulama.
-ÖNEMLİ: 2-participant kurulamıyorsa bunu açıkça "BLOCKER" diye yaz; PoC'ye geçme.
-ÇIKTI:
-1) Kurulum komutları / config diff'leri
-2) İki participant'ın birbirini gördüğünü kanıtlayan sağlık kontrolü
-3) "ortam hazır" checklist
-4) Takılırsan: hangi dosyayı elle düzenledin, ne kırıldı
-
-NOT (2026-07-15): Canton OSS native 01-simple-topology ile ping kanıtlandı.
-Docker/Splice hâlâ BLOCKER - ileride retry için bu prompt'u tekrar kullan.</div>
+Bu promptları tekrar koşma. Detay: rehberin 3-4-5. bölümleri + run-log.</div>
       </div>
 
       <div class="card" style="margin-bottom:1rem;">
-        <span class="tag tag-ok">Prompt A1 — Manuel baseline spec</span>
-        <span class="badge badge-done">Spec yazıldı</span>
-        <div class="prompt">Amaç: Offline party replication / backup-restore'u LocalNet'te MANUEL belgelemek.
+        <span class="tag tag-ok">Prompt A6 — Canton adapter</span>
+        <span class="badge badge-done">Tamam (2026-07-16)</span>
+        <div class="prompt">TAMAMLANDI: runner/canton.ts — her adım gerçek remote console script'i,
+CRO_VAR değer taşıma (offset'ler), adım logları, TS-side post-condition'lar
+(export boyutu), backup_target h2/memory dokümante no-op.
+Kanıt: live-drill.sh → 13/13 gerçek adım + idempotent no-op + hedefte ACS assert.
+Keşif: memory storage ACS import reddediyor → H2 zorunlu.</div>
+      </div>
 
-GÖREV: Resmi Canton/Splice dokümanına dayanarak adım adım prosedür çıkar.
-Her adım için zorunlu alanlar:
-- adım adı
-- komut(lar)
-- pre-condition
-- post-condition (nasıl assert edilir?)
-- başarısızlık belirtisi
+      <div class="card" style="margin-bottom:1rem;">
+        <span class="tag tag-ok">Prompt A7 — Live preflight probe'ları</span>
+        <span class="badge badge-done">Tamam (2026-07-16)</span>
+        <div class="prompt">TAMAMLANDI: runner/probe.ts — tek console koşumunda 7 canlı probe;
+operatör-niyeti alanlar beyan olarak kalır; merge probe damgasıyla facts.json'a.
+Fail-safe: console ulaşılamazsa hepsi false → preflight FAIL → apply bloke.
+Yeni check: party_not_already_on_target (warn + resume ipucu).
+Keşif: import scala.util.Try console'da TASTy hatası → try/catch.</div>
+      </div>
 
-KISIT: Otomasyon kodu yok. Spekülasyon yok; docs'ta yoksa "bilinmiyor / doğrulanacak" yaz.
-ÇIKTI: docs/manual-baseline.md içeriği (Tam Türkçe açıklama + komutlar İngilizce kalabilir).
-
-TAMAMLANDI: docs/manual-baseline.md repo'da. Sonraki: A1b ile elle koş.</div>
+      <div class="card" style="margin-bottom:1rem;">
+        <span class="tag tag-ok">Prompt A8 — Gerçek broken ACS drill</span>
+        <span class="badge badge-done">Tamam (2026-07-16)</span>
+        <div class="prompt">TAMAMLANDI: gerçek fault → gerçek kurtarma döngüsü (live-fault-drill.sh):
+pristine kopya (.good) → deterministik boz → Canton GERÇEK hata
+(PROTO_DESERIALIZATION_FAILURE) → SAFE STOP + gerçek satırlı diagnosis.json
+→ assert-clean-target (hedef temiz kanıtı) → restore → resume → completed.
+partial-acs-import: stub-only (gerçekte deterministik üretilemez — iddia yok).
+Bug bulundu+düzeltildi: resume config reload etmiyordu (fault'u tekrar enjekte ederdi).
+CI: live-fault-drill job'ı — ubuntu'da ilk denemede yeşil (artifact'lı).</div>
       </div>
 
       <div class="card" style="margin-bottom:1rem;border:2px solid var(--accent);">
-        <span class="tag tag-warn">Prompt A1b — Manuel baseline KOŞUMU (SIRADA)</span>
+        <span class="tag tag-warn">Prompt A9 — Demo + threat model (SIRADA)</span>
         <span class="badge badge-next">Şimdi bunu kullan</span>
-        <div class="prompt">Canton Recovery Orchestration - Aşama 1 go/no-go.
-
-Elimizde: docs/manual-baseline.md (13 adım spec), localnet/ ortamı (Canton OSS 2 participant ping OK).
-
-GÖREV: Offline party replication akışını console'da MANUEL bir kez uçtan uca koş.
-Her adım için kaydet:
-- gerçek komut / çıktı özeti
-- pre-condition geçti mi?
-- post-condition nasıl doğrulandı?
-- süre / zorluk (1-5)
-- "bilinmiyor" maddeleri doğrulandı mı?
-
-FAIL TEST: Tüm akış ~20 satırlık script ile kolayca çözülüyor mu? Cevabı açık yaz.
-
-KISIT: CLI otomasyonu genişletme. Sadece koşum + log.
-ÇIKTI: docs/manual-baseline-run-log.md (Türkçe, somut kanıt).
-Go/no-go kararı: otomasyon değer var mı, yok mu?</div>
-      </div>
-
-      <div class="card" style="margin-bottom:1rem;">
-        <span class="tag tag-ok">Prompt A2 — State machine CLI</span>
-        <span class="badge badge-done">Stub tamam</span>
-        <div class="prompt">manual-baseline.md elimizde. Şimdi SADECE happy-path orchestration CLI iskeleti.
-
-Gereksinimler:
-- adım state machine
-- apply
-- resume (yarıda kalan yerden)
-- idempotent tekrar çalıştırma
-- key/seed/mnemonic'e dokunma
-- dashboard yok
-
-Dil öner: TypeScript veya Go (basit tut).
-ÇIKTI: minimum çalışan CLI + README kullanım örneği.
-ÖNCE planı yaz, onayımı bekle, sonra kodla.
-
-TAMAMLANDI: cli/ TypeScript, runs/&lt;id&gt;/ state, stub runner.</div>
-      </div>
-
-      <div class="card" style="margin-bottom:1rem;">
-        <span class="tag tag-ok">Prompt A3 — Plan + preflight</span>
-        <span class="badge badge-done">Stub tamam</span>
-        <div class="prompt">Mevcut CLI'ya ekle:
-1) cro plan  → mutate etmeden yapılacaklar listesi
-2) cro preflight → başarısız olursa apply'ı engelle
-
-Preflight kurallarını manual-baseline.md post/pre condition'larından üret.
-Yeni özellik ekleme. Test edilebilir hale getir.
-
-TAMAMLANDI: plan, preflight, facts.json, npm test yeşil.</div>
-      </div>
-
-      <div class="card" style="margin-bottom:1rem;">
-        <span class="tag tag-ok">Prompt A4 — Fault drill + CI</span>
-        <span class="badge badge-partial">Stub tamam</span>
-        <div class="prompt">Fault injection senaryosu ekle: broken/partial ACS import.
-Araç hatayı yaklasın, anlaşılır teşhis bas, güvenli şekilde dursun.
-Sonra GitHub Actions workflow'u ekle: LocalNet drill Job.
-Kapsam dışı: UI, metrics dashboard, alerting platformu.
-Demo için README'ye "kanıt adımları" bölümü yaz.
-
-TAMAMLANDI (stub): fault.ts, localnet-drill.yml, README kanıt A-D.
-EKSİK: gerçek ACS mismatch drill (A8'de).</div>
-      </div>
-
-      <div class="card" style="margin-bottom:1rem;">
-        <span class="tag tag-info">Prompt A6 — Canton adapter (go/no-go sonrası)</span>
-        <span class="badge badge-todo">Bekliyor</span>
-        <div class="prompt">cli/ stub runner yerine gerçek Canton adapter.
-
-GÖREV (minimal v1):
-1) runner/canton.ts - export_acs + import_acs happy path
-2) LocalNet participant endpoint config (cli config veya env)
-3) apply/resume gerçek adımları çalıştırsın; stub sadece test fallback kalsın
-
-KISIT: key/seed yok. Dashboard yok. Önce plan, onay, sonra kod.
-manual-baseline-run-log.md'deki doğrulanmış komutlara dayan.
-ÇIKTI: en az bir integration test veya drill script kanıtı.</div>
-      </div>
-
-      <div class="card" style="margin-bottom:1rem;">
-        <span class="tag tag-info">Prompt A7 — Live preflight probe'ları</span>
-        <span class="badge badge-todo">Bekliyor</span>
-        <div class="prompt">preflight kurallarını stub facts.json yerine Canton'dan oku.
+        <div class="prompt">Grant öncesi paketleme. PoC + kanıtlar hazır; YENİ İDDİA ÜRETME, olanı anlat.
 
 GÖREV:
-- backup tazeliği, participant health, migration flag vb. gerçek probe
-- kötü durumda preflight fail + apply engeli
-- mevcut testleri güncelle
+1) 2-4 dk demo video storyboard + çekim script'i (README'ye link bölümü):
+   akış = live-fault-drill.sh: taşı → boz → gerçek hata → güvenli dur →
+   temizlik kanıtı → restore → resume → tamam. Kanıt dosyalarını ekranda göster
+   (diagnosis.json, state.json, CRO_ASSERT_OK).
+2) docs/threat-model.md: key'e DOKUNMUYORUZ; dokunduklarımız: admin/ledger API
+   (remote console), ACS snapshot dosyaları, topology tx'leri. Fail-safe preflight
+   felsefesi (ölü ortam asla yeşil değil). Kısa, operatör dilinde.
+3) docs/runbook.md: run-log A8 rollback özetinin genişletilmiş hali
+   (preflight → apply → FAILED import prosedürü → restore → resume).
 
-KISIT: yeni komut ekleme. Mevcut preflight API'sini genişlet.</div>
-      </div>
-
-      <div class="card" style="margin-bottom:1rem;">
-        <span class="tag tag-info">Prompt A8 — Gerçek broken ACS drill</span>
-        <span class="badge badge-todo">Bekliyor</span>
-        <div class="prompt">Stub fault yerine LocalNet'te deterministik bozuk ACS import üret.
-
-GÖREV:
-- mismatch veya dokümandaki eşdeğer hatayı yakala
-- diagnosis.json anlamlı olsun
-- güvenli dur / rollback yolu dokümante
-- CI job'a ekle (veya ayrı manual drill script)
-
-KISIT: grant iddiasını büyütme; kanıtlanabilir olsun.</div>
-      </div>
-
-      <div class="card" style="margin-bottom:1rem;">
-        <span class="tag tag-info">Prompt A9 — Demo + threat model</span>
-        <span class="badge badge-todo">Bekliyor</span>
-        <div class="prompt">Grant öncesi paketleme.
-
-GÖREV:
-1) 2-4 dk demo video storyboard veya script (README'ye link)
-2) docs/threat-model.md - key'e dokunmuyoruz, hangi API'lere dokunuyoruz
-3) docs/runbook.md kısa operatör prosedürü
-
-KISIT: COOT tarzı dashboard/observability ekleme.</div>
+KISIT: dashboard/observability ekleme; em-dash kullanma (—); iddiaları
+run-log'daki kanıtlara referansla.</div>
       </div>
 
       <div class="card">
         <span class="tag tag-warn">Prompt A5 — Grant metni (+ AI-slop bot koruması)</span>
-        <span class="badge badge-todo">Erken</span>
-        <div class="prompt">PoC hazır. canton-dev-fund proposal taslağı yaz.
+        <span class="badge badge-todo">A9 sonrası</span>
+        <div class="prompt">PoC hazır (A6+A7+A8 kanıtlı). canton-dev-fund proposal taslağı yaz.
 
 Kurallar:
 - tek objective
 - key export yok
 - COOT (#433), Migration Lens (#34), Decentralization Manager ile ayrım cümleleri
-- 3 milestone
+- 3 milestone (M1'in çoğu kanıtlı — hızlandırıcı olarak sun; M2: Postgres backup
+  + drill matrisi + Windows/Splice; M3: adoption)
 - funding 400k–650k CC bandında
 - adoption ölçütü olsun
 - template yapısına uy (abstract, specification, milestones, acceptance, funding)
+- kanıt linkleri: run-log, CI job'ları, diagnosis.json örneği
 
 AI-SLOP / aipricheck.yml KISITLARI (zorunlu):
 - Em-dash (—) yok. Sadece düz tire (-) veya normal cümle.
 - Madde satırlarını noktalı virgülle (;) bitirme.
-- Uydurma terim yok: sharding, Canton chain, Daml VM, L2, gas fee, smart account vb. Canton jargonunda yoksa yazma.
-- Abartılı AI kalıpları yok ("revolutionize", "seamless", "cutting-edge", "leverage synergies").
+- Uydurma terim yok: sharding, Canton chain, Daml VM, L2, gas fee vb.
+- Abartılı AI kalıpları yok ("revolutionize", "seamless", "cutting-edge").
 - Her teknik iddia docs veya PoC'ye dayansın; uydurma metrik yok.
 - Kısa, somut, operatör dilinde yaz.
 
-Önce outline, sonra full markdown.
-Outline onaylanmadan uzun metin üretme.
-
-NOT: A1b + A6 + A8 tamamlanmadan full proposal yazma.</div>
+Önce outline, sonra full markdown. Outline onaylanmadan uzun metin üretme.</div>
       </div>
     </section>
 
     <section id="grant">
-      <h2>7. Grant’e giderken çerçeve</h2>
+      <h2>8. Grant'e giderken çerçeve</h2>
       <table>
         <thead>
           <tr>
@@ -1102,15 +912,19 @@ NOT: A1b + A6 + A8 tamamlanmadan full proposal yazma.</div>
           </tr>
           <tr>
             <td>Çözüm</td>
-            <td>Open-source orchestration CLI: plan / preflight / apply / resume / drill.</td>
+            <td>Open-source orchestration CLI: plan / preflight / apply / resume / drill — <strong>çalışır halde, kanıtlı</strong>.</td>
           </tr>
           <tr>
             <td>Neden şimdi?</td>
-            <td>LSU synchronizer-level’ı çözdü; party-level tooling roadmap’te görünmüyor.</td>
+            <td>LSU synchronizer-level'ı çözdü; party-level tooling roadmap'te görünmüyor.</td>
           </tr>
           <tr>
             <td>Güvenlik</td>
-            <td>Key material’e dokunmuyoruz; ACS/topology orchestration.</td>
+            <td>Key material'e dokunmuyoruz; ACS/topology orchestration (threat-model.md — A9).</td>
+          </tr>
+          <tr>
+            <td>Kanıt</td>
+            <td>Gerçek 13-adım koşumu + gerçek fault/kurtarma drill'i + CI job'ları + run-log; resume bug'ını drill'in yakalaması.</td>
           </tr>
           <tr>
             <td>Rakip ayrımı</td>
@@ -1125,51 +939,52 @@ NOT: A1b + A6 + A8 tamamlanmadan full proposal yazma.</div>
 
       <div class="callout info" style="margin-top:1rem;">
         <strong>Champion gerçeği</strong>
-        PR açınca <code>needs-champion</code> aşamasına gelebilir; mail/SIG ile ilgilenir gelir.
-        Ama kimse sahiplenmezse (COOT gibi) dosya ölür. PoC’n ne kadar ikna ediciyse
-        champion bulmak o kadar kolay.
+        PR açınca <code>needs-champion</code> aşamasına gelebilir; mail/SIG ile ilgilenen gelir.
+        Kimse sahiplenmezse (COOT gibi) dosya ölür. Elimizdeki fark: COOT'un aksine
+        çalışan, CI'da her push'ta kendini kanıtlayan bir recovery döngüsü var.
       </div>
     </section>
 
     <section id="kontrol">
-      <h2>8. Canlı kontrol listesi</h2>
+      <h2>9. Canlı kontrol listesi</h2>
       <p style="font-size:.95rem;color:var(--muted);">
-        İşaretli maddeler 2026-07-15 itibarıyla tamamlandı. Tarayıcı checkbox’ları yerel kaydedilir.
+        İşaretli maddeler 2026-07-16 itibarıyla tamamlandı.
       </p>
       <div class="card checklist">
-        <label><input type="checkbox" checked /> DA’ya party-level recovery roadmap sorusu soruldu / cevap not edildi</label>
-        <label><input type="checkbox" /> Cevap “geliyor” ise proje DURDURULDU (PoC’ye başlanmadı)</label>
-        <label><input type="checkbox" checked /> İki bağımsız participant LocalNet ayakta (native Canton OSS; Splice/Docker opsiyonel BLOCKER)</label>
-        <label><input type="checkbox" checked /> İki participant birbirini görüyor / sağlık kontrolü geçti (ping-proof.txt)</label>
+        <label><input type="checkbox" checked /> DA'ya party-level recovery roadmap sorusu soruldu / cevap not edildi</label>
+        <label><input type="checkbox" /> (ops.) DA'dan yazılı roadmap teyidi alındı</label>
+        <label><input type="checkbox" checked /> İki bağımsız participant ayakta — H2 kalıcı topoloji (memory yetmez, kanıtlı)</label>
+        <label><input type="checkbox" checked /> İki participant birbirini görüyor (ping proof)</label>
         <label><input type="checkbox" checked /> Manuel recovery adımları pre/post condition ile yazıldı (spec)</label>
-        <label><input type="checkbox" /> Manuel baseline console’da uçtan uca koşuldu (go/no-go)</label>
-        <label><input type="checkbox" /> “20 satırlık script yeter” fail testi geçti (otomasyon değeri var)</label>
-        <label><input type="checkbox" checked /> <code>apply</code> happy-path yeşil (stub)</label>
-        <label><input type="checkbox" checked /> <code>resume</code> yarıda kalınca çalışıyor</label>
-        <label><input type="checkbox" checked /> İkinci çalıştırma idempotent</label>
+        <label><input type="checkbox" checked /> Manuel baseline GERÇEK koşuldu — go/no-go: GO (run-log)</label>
+        <label><input type="checkbox" checked /> "20 satırlık script yeter" fail testi dürüstçe cevaplandı (run-log)</label>
+        <label><input type="checkbox" checked /> <code>apply</code> happy-path GERÇEK Canton'da yeşil (13/13)</label>
+        <label><input type="checkbox" checked /> <code>resume</code> çalışıyor (canlı kurtarma döngüsünde kanıtlı + config reload fix)</label>
+        <label><input type="checkbox" checked /> İkinci çalıştırma idempotent (canlıda kanıtlı)</label>
         <label><input type="checkbox" checked /> <code>plan</code> mutate etmiyor</label>
-        <label><input type="checkbox" checked /> <code>preflight</code> kötü durumda engelliyor</label>
-        <label><input type="checkbox" checked /> Broken ACS drill yakalanıyor (stub)</label>
-        <label><input type="checkbox" checked /> CI drill yeşil (GitHub Actions)</label>
-        <label><input type="checkbox" checked /> README kanıt bölümü (A–D)</label>
-        <label><input type="checkbox" /> Demo video</label>
-        <label><input type="checkbox" /> Threat model: key’e dokunulmuyor yazılı</label>
-        <label><input type="checkbox" /> Canton adapter (gerçek export/import)</label>
-        <label><input type="checkbox" /> Gerçek ACS mismatch drill</label>
-        <label><input type="checkbox" /> Grant taslağı dar scope + 400–650k CC</label>
-        <label><input type="checkbox" /> Proposal’da em-dash / AI-slop / uydurma jargon yok</label>
-        <label><input type="checkbox" /> Rakip ayrım cümleleri eklendi</label>
+        <label><input type="checkbox" checked /> <code>preflight</code> CANLI probe'larla; ölü ortamda FAIL + apply bloke</label>
+        <label><input type="checkbox" checked /> GERÇEK broken ACS drill: gerçek hata + diagnosis + temiz-hedef kanıtı + restore + resume</label>
+        <label><input type="checkbox" checked /> CI drill'leri yeşil (stub + ping + gerçek fault, artifact'lı — 3/3)</label>
+        <label><input type="checkbox" checked /> README kanıt bölümü (A–D, C2/C3 gerçek drill'ler)</label>
+        <label><input type="checkbox" checked /> Canton adapter (gerçek export/import)</label>
+        <label><input type="checkbox" /> Demo video (A9)</label>
+        <label><input type="checkbox" /> Threat model: key'e dokunulmuyor yazılı (A9)</label>
+        <label><input type="checkbox" /> Runbook.md operatör prosedürü (A9)</label>
+        <label><input type="checkbox" /> Grant taslağı dar scope + 400–650k CC (A5)</label>
+        <label><input type="checkbox" /> Proposal'da em-dash / AI-slop / uydurma jargon yok (A5)</label>
+        <label><input type="checkbox" /> Rakip ayrım cümleleri eklendi (A5)</label>
       </div>
     </section>
 
     <footer>
       <p>
-        <strong>Canton Recovery Orchestration Rehberi</strong> · Güncelleme: 2026-07-15 ·
+        <strong>Canton Recovery Orchestration Rehberi</strong> · Güncelleme: 2026-07-16 (A6+A7+A8 tamam, CI 3/3 yeşil) ·
         Repo: <a href="https://github.com/emrhnyz/canton-cro">emrhnyz/canton-cro</a>
       </p>
       <p>
-        Hatırlatma: Değer “komut sarmalayıcı”da değil;
-        <em>idempotency + resume + preflight + post-condition + fault drill</em> demetinde.
+        Hatırlatma: Değer "komut sarmalayıcı"da değil;
+        <em>idempotency + resume + canlı preflight + post-condition + gerçek fault drill</em> demetinde —
+        ve artık hepsi kanıtlı.
       </p>
     </footer>
   </div>
