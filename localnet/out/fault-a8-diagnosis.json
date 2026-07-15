@@ -1,0 +1,28 @@
+{
+  "fault": "broken-acs-import",
+  "step": "import_acs",
+  "code": "PROTO_DESERIALIZATION_FAILURE",
+  "summary": "REAL Canton import failure for party alice-16743::12204c830b46c3a0a3da05bfd26ec0198c0d679255402dddb483fcf6b437bdbc47a8 (corrupted ACS snapshot)",
+  "observed": [
+    "2026-07-16 02:06:41,504 [main] ERROR c.d.c.c.CantonConsoleEnvironment - Request failed for participant2.",
+    "GrpcClientError: INVALID_ARGUMENT/PROTO_DESERIALIZATION_FAILURE(8,43514f8a): Deserialization of protobuf message failed",
+    "DecodedCantonError(",
+    "code = 'PROTO_DESERIALIZATION_FAILURE',",
+    "category = InvalidIndependentOfSystemState,",
+    "context = Seq('reason=>OtherError(null)', 'participant=>participant2')"
+  ],
+  "safeStop": true,
+  "doNot": [
+    "Do not reconnect the target to synchronizers after a failed import",
+    "Do not clear the onboarding flag",
+    "Do not delete the pristine snapshot copy (*.good) — it is the rollback artifact"
+  ],
+  "nextActions": [
+    "Verify the target is clean: target ACS for the party must be empty (assert-clean-target.sc)",
+    "Restore the pristine snapshot over the corrupted file (cp '/Users/erenyegit/dev/canton-cro/cli/runs/fault-a8/acs/party_replication.acs.gz.good' back)",
+    "Set faultInjection to \"none\" in runs/<id>/config.json",
+    "cro resume --run <id>  (import retries with the restored snapshot)"
+  ],
+  "baselineRef": "docs/manual-baseline.md steps 9-10 + run log A8: real corrupted-snapshot drill",
+  "at": "2026-07-15T23:06:41.969Z"
+}

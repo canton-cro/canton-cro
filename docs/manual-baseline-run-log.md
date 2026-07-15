@@ -147,3 +147,51 @@ kalıyor; birleşik sonuç probe damgasıyla facts.json'a geri yazılıyor (dene
   görünmemişti — console script'lerinde `scala.util._` import'undan kaçının.
 - `parties.hosted(filterParty = ...)` 3.5.8'de doğrulandı (source true / target false,
   replication sonrası target true).
+
+---
+
+# Ek: A8 koşum kaydı — GERÇEK broken-ACS drill (2026-07-16)
+
+**Değişiklik:** Fault artık simülasyon değil. `--fault broken-acs-import` + canton runner:
+import öncesi export snapshot'ının pristine kopyası (`*.good`) alınır, canlı dosya
+deterministik bozulur (ilk yarı + sabit junk) ve import GERÇEK Canton tarafından reddedilir.
+`partial-acs-import` gerçek ledger'da deterministik üretilemiyor — v1'de açıkça stub-only
+(iddia büyütme yok).
+
+## Uçtan uca kanıt (run: fault-a8, `cli/scripts/live-fault-drill.sh`)
+
+1. **Gerçek kırılma:** Canton'ın verdiği hata birebir:
+   `GrpcClientError: INVALID_ARGUMENT/PROTO_DESERIALIZATION_FAILURE(8,...): Deserialization of protobuf message failed`
+2. **Güvenli durma:** `SAFE STOP at import_acs (PROTO_DESERIALIZATION_FAILURE)` —
+   `import_acs=failed`, `reconnect`/`clear_onboarding_flag` pending kaldı (ileri atlama yok).
+3. **Anlamlı diagnosis:** `diagnosis.json` gerçek hata satırları + gerçek kod + rollback
+   adımları içeriyor (`localnet/out/fault-a8-diagnosis.json`).
+4. **Temiz-hedef kanıtı:** `assert-clean-target.sc` → `targetAcsCountAfterFail=0`,
+   `CRO_CLEAN_OK` — failed import hiçbir contract'ı yarım bırakmadı; restore+retry güvenli.
+5. **Rollback:** pristine snapshot geri kondu, `faultInjection=none` yapıldı.
+6. **Kurtarma:** `cro resume` → import restore edilmiş dosyayla geçti → kalan adımlar →
+   `run fault-a8: completed` → `CRO_ASSERT_OK` (target'ta party ACS'i canlı).
+
+## Güvenli dur / rollback prosedürü (operatör runbook özeti)
+
+```
+FAILED import_acs gördüğünde:
+1. DURMA doğru davranış — reconnect etme, onboarding flag'i temizleme.
+2. runs/<id>/diagnosis.json oku (gerçek Canton hatası + kod).
+3. Hedef temiz mi doğrula: assert-clean-target.sc (target ACS boş olmalı).
+4. Snapshot'ı restore et: cp party_replication.acs.gz.good party_replication.acs.gz
+5. runs/<id>/config.json -> faultInjection: "none" (drill ise).
+6. cro resume --run <id>  -> kaldığı adımdan tamamlar.
+```
+
+## Koşumda bulunan ve düzeltilen gerçek bug
+
+`cro resume`, config.json'ı yeniden okumuyordu — state içindeki config snapshot'ı
+(fault=broken) ile devam edip snapshot'ı TEKRAR bozuyordu. Kurtarma döngüsü bu yüzden
+resume'a config reload eklenerek düzeltildi (`cli/src/index.ts`). Bu, fault drill'in
+kendisinin yakaladığı gerçek bir orchestration hatası — drill'lerin varlık sebebi.
+
+## CI
+
+`.github/workflows/localnet-drill.yml` -> `live-fault-drill` job'ı: her push/PR'da
+gerçek kır-restore-resume döngüsünü koşar, diagnosis/state/events'i artifact yükler.

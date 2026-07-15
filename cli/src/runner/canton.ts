@@ -1,10 +1,18 @@
 import { spawnSync, type SpawnSyncReturns } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { join } from "node:path";
 import type { StepId } from "../steps.js";
 import type { RunConfig } from "../state.js";
 import { runDir } from "../state.js";
 import { loadFacts } from "../facts.js";
+import { AcsImportFaultError, diagnoseRealAcsImportFault } from "../fault.js";
 import type { StepContext, StepResult } from "./stub.js";
 
 /**
@@ -264,13 +272,25 @@ export function execConsoleScript(
   );
 }
 
+/**
+ * Deterministic snapshot corruption (A8): keep the first half of the bytes,
+ * append fixed junk. Same input file -> same corrupted output. Canton then
+ * fails the import for REAL (gzip/validation error), not via simulation.
+ */
+export function corruptSnapshot(path: string): void {
+  const buf = readFileSync(path);
+  const half = buf.subarray(0, Math.max(1, Math.floor(buf.length / 2)));
+  const junk = Buffer.from("CRO_FAULT_JUNK_".repeat(8), "utf8");
+  writeFileSync(path, Buffer.concat([half, junk]));
+}
+
 export function runCantonStep(ctx: StepContext, cwd = process.cwd()): StepResult {
   const { runId, stepId, config } = ctx;
 
-  if (config.faultInjection && config.faultInjection !== "none") {
+  if (config.faultInjection === "partial-acs-import") {
     throw new Error(
-      "canton runner does not simulate faults (A8 will add the real broken-ACS drill); " +
-        "use the stub runner for simulated drills",
+      "partial-acs-import cannot be produced deterministically on a real ledger in v1 — " +
+        "it stays stub-only (see run log A8); use --fault broken-acs-import for the real drill",
     );
   }
 
@@ -316,6 +336,21 @@ export function runCantonStep(ctx: StepContext, cwd = process.cwd()): StepResult
     throw new Error("vet_packages needs canton.darPath (or CRO_DAR_PATH env)");
   }
 
+  // A8 real fault: before the real import, keep a pristine snapshot copy
+  // (the rollback artifact) and deterministically corrupt the live file.
+  const goodSnapshot = params.acsFile + ".good";
+  const realFaultArmed =
+    stepId === "import_acs" && config.faultInjection === "broken-acs-import";
+  if (realFaultArmed) {
+    if (!existsSync(params.acsFile)) {
+      throw new Error("broken-acs-import drill needs an exported snapshot (run export_acs first)");
+    }
+    if (!existsSync(goodSnapshot)) {
+      copyFileSync(params.acsFile, goodSnapshot);
+    }
+    corruptSnapshot(params.acsFile);
+  }
+
   const script = prelude(params) + stepBody(stepId, params);
   const scriptPath = join(scriptsDir, `${stepId}.sc`);
   writeFileSync(scriptPath, script, "utf8");
@@ -335,10 +370,34 @@ export function runCantonStep(ctx: StepContext, cwd = process.cwd()): StepResult
   const stdout = res.stdout ?? "";
   const croErr = stdout.match(/^CRO_ERR (.*)$/m)?.[1];
   if (res.status !== 0 || croErr) {
+    if (realFaultArmed) {
+      // REAL failure from Canton (corrupted snapshot rejected) -> structured
+      // diagnosis with the actual console error lines; machine safe-stops.
+      const combined = `${res.stderr ?? ""}\n${stdout}`;
+      const errorLines = combined
+        .split("\n")
+        .filter((l) => /error|exception|failure|invalid|corrupt/i.test(l))
+        .join("\n");
+      throw new AcsImportFaultError(
+        diagnoseRealAcsImportFault(
+          config.partyId,
+          errorLines || combined.split("\n").slice(-10).join("\n"),
+          goodSnapshot,
+          logPath,
+        ),
+      );
+    }
     throw new Error(
       `step ${stepId}: canton console exited ${res.status}` +
         (croErr ? ` — ${croErr}` : "") +
         ` (log: ${logPath})`,
+    );
+  }
+  if (realFaultArmed) {
+    // Canton accepted a corrupted snapshot — the drill itself is invalid.
+    throw new Error(
+      "broken-acs-import drill invalid: import succeeded despite corrupted snapshot " +
+        `(log: ${logPath})`,
     );
   }
 

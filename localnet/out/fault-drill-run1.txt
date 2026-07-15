@@ -1,0 +1,67 @@
+waiting for daemon (CRO_DAEMON_READY)...
+daemon ready.
+Picked up JAVA_TOOL_OPTIONS: -Duser.language=en -Duser.country=US -Dfile.encoding=UTF-8 "-Dcro.dar=/Users/erenyegit/dev/canton-cro/vendor/canton-open-source-3.5.8/dars/CantonExamples.dar" "-Dcro.partyHint=alice-16401"
+CRO_VAR partyId=alice-16401::1220d37bd01f0c009392ca598fe8d7a91e3d04d50bf96199b5e841d4aa6cc9a155a1
+CRO_VAR sourceAcsCount=1
+CRO_SETUP_OK
+party: alice-16401::1220d37bd01f0c009392ca598fe8d7a91e3d04d50bf96199b5e841d4aa6cc9a155a1
+Initialized run 'fault-a8'
+  config: runs/fault-a8/config.json
+  facts:  runs/fault-a8/facts.json
+  state:  runs/fault-a8/state.json
+  ✓ vet_packages: real: vet_packages ok (mainPackageId=4dffebf4008e845e37f602fa2d54fd596a8b605af564239fc62948c39fdb79e2)
+  ✓ data_retention: real: data_retention ok (pruningCleared=true)
+  ✓ target_authorize: real: target_authorize ok (targetAuthorized=true)
+  ✓ disconnect_all: real: disconnect_all ok (targetDisconnected=true)
+  ✓ disable_auto_reconnect: real: disable_auto_reconnect ok (manualConnect=true)
+  ✓ source_authorize: real: source_authorize ok (beforeActivationOffset=34)
+  ✓ export_acs: real: export_acs wrote 616 bytes (/Users/erenyegit/dev/canton-cro/cli/runs/fault-a8/acs/party_replication.acs.gz)
+  ✓ reenable_pruning: real: reenable_pruning ok (pruningRestored=noop)
+  ~ backup_target: h2 storage: backup step is a documented no-op in v1 (baseline step 9 note) — real backup + restore-from-backup lands with the A8 drill
+  ✗ import_acs: ACS_IMPORT_FAILED: REAL Canton import failure for party alice-16401::1220d37bd01f0c009392ca598fe8d7a91e3d04d50bf96199b5e841d4aa6cc9a155a1 (corrupted ACS snapshot)
+=== CRO DIAGNOSIS (safe stop) ===
+fault:     broken-acs-import
+step:      import_acs
+code:      ACS_IMPORT_FAILED
+summary:   REAL Canton import failure for party alice-16401::1220d37bd01f0c009392ca598fe8d7a91e3d04d50bf96199b5e841d4aa6cc9a155a1 (corrupted ACS snapshot)
+safeStop:  true
+
+observed:
+  - 2026-07-16 02:03:27,831 [main] ERROR c.d.c.c.CantonConsoleEnvironment - Request failed for participant2.
+  - GrpcClientError: INVALID_ARGUMENT/PROTO_DESERIALIZATION_FAILURE(8,a252ba42): Deserialization of protobuf message failed
+  - DecodedCantonError(
+  - code = 'PROTO_DESERIALIZATION_FAILURE',
+  - category = InvalidIndependentOfSystemState,
+  - context = Seq('reason=>OtherError(null)', 'participant=>participant2')
+
+do NOT:
+  - Do not reconnect the target to synchronizers after a failed import
+  - Do not clear the onboarding flag
+  - Do not delete the pristine snapshot copy (*.good) — it is the rollback artifact
+
+next:
+  - Verify the target is clean: target ACS for the party must be empty (assert-clean-target.sc)
+  - Restore the pristine snapshot over the corrupted file (cp '/Users/erenyegit/dev/canton-cro/cli/runs/fault-a8/acs/party_replication.acs.gz.good' back)
+  - Set faultInjection to "none" in runs/<id>/config.json
+  - cro resume --run <id>  (import retries with the restored snapshot)
+
+baseline: docs/manual-baseline.md steps 9-10 + run log A8: real corrupted-snapshot drill
+=== END DIAGNOSIS ===
+run fault-a8: SAFE STOP at import_acs (ACS_IMPORT_FAILED) — see runs/fault-a8/diagnosis.json — restore backup then cro resume
+drill PASS: fault caught, diagnosis written, safe stop (no reconnect)
+diagnosis code: ACS_IMPORT_FAILED
+Picked up JAVA_TOOL_OPTIONS: -Duser.language=en -Duser.country=US -Dfile.encoding=UTF-8 "-Dcro.party=alice-16401::1220d37bd01f0c009392ca598fe8d7a91e3d04d50bf96199b5e841d4aa6cc9a155a1"
+CRO_VAR targetAcsCountAfterFail=0
+CRO_CLEAN_OK
+rollback done: snapshot restored, fault disarmed
+  ✓ import_acs: real: import_acs ok (acsImported=true)
+  ✓ reconnect: real: reconnect ok (targetLedgerEnd=29, reconnected=true)
+  ✓ reenable_auto_reconnect: real: reenable_auto_reconnect ok (manualConnect=false)
+  ✓ clear_onboarding_flag: real: clear_onboarding_flag ok (onboardingFlagCleared=true)
+run fault-a8: completed
+Picked up JAVA_TOOL_OPTIONS: -Duser.language=en -Duser.country=US -Dfile.encoding=UTF-8 "-Dcro.party=alice-16401::1220d37bd01f0c009392ca598fe8d7a91e3d04d50bf96199b5e841d4aa6cc9a155a1"
+CRO_VAR targetAcsCount=1
+CRO_ASSERT_OK
+
+fault-drill OK — REAL break -> diagnosis -> clean-target proof -> restore -> resume -> completed (run: fault-a8)
+evidence: cli/runs/fault-a8/{diagnosis.json,state.json,events.jsonl,logs/}, /Users/erenyegit/dev/canton-cro/localnet/out/fault-*.out

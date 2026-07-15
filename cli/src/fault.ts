@@ -77,6 +77,53 @@ export function diagnosePartialAcsImport(partyId: string): AcsFaultDiagnosis {
   };
 }
 
+/** Pull the Canton error code out of real console output (fallback: generic). */
+export function extractCantonErrorCode(realError: string): string {
+  const m = realError.match(
+    /\b(IMPORT_ACS_ERROR|ACS_COMMITMENT_MISMATCH[A-Z_]*|[A-Z][A-Z_]{4,}(?:ERROR|FAILURE|MISMATCH))\b/,
+  );
+  return m?.[1] ?? "ACS_IMPORT_FAILED";
+}
+
+/**
+ * Diagnosis for a REAL failed import (canton runner, A8 drill): observed lines
+ * come from the actual Canton console output, and the recovery path uses the
+ * pristine snapshot copy taken before fault injection.
+ */
+export function diagnoseRealAcsImportFault(
+  partyId: string,
+  realError: string,
+  goodSnapshotPath: string,
+  logPath: string,
+): AcsFaultDiagnosis {
+  const lines = realError
+    .split("\n")
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0)
+    .slice(0, 6);
+  return {
+    fault: "broken-acs-import",
+    step: "import_acs",
+    code: extractCantonErrorCode(realError),
+    summary: `REAL Canton import failure for party ${partyId} (corrupted ACS snapshot)`,
+    observed: lines.length > 0 ? lines : ["<no console output captured>", `see ${logPath}`],
+    safeStop: true,
+    doNot: [
+      "Do not reconnect the target to synchronizers after a failed import",
+      "Do not clear the onboarding flag",
+      "Do not delete the pristine snapshot copy (*.good) — it is the rollback artifact",
+    ],
+    nextActions: [
+      "Verify the target is clean: target ACS for the party must be empty (assert-clean-target.sc)",
+      `Restore the pristine snapshot over the corrupted file (cp '${goodSnapshotPath}' back)`,
+      'Set faultInjection to "none" in runs/<id>/config.json',
+      "cro resume --run <id>  (import retries with the restored snapshot)",
+    ],
+    baselineRef:
+      "docs/manual-baseline.md steps 9-10 + run log A8: real corrupted-snapshot drill",
+  };
+}
+
 export function formatDiagnosis(d: AcsFaultDiagnosis): string {
   const lines = [
     "=== CRO DIAGNOSIS (safe stop) ===",

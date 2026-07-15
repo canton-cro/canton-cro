@@ -75,3 +75,59 @@ describe("ACS fault injection", () => {
     }
   });
 });
+
+describe("A8 real-fault helpers", () => {
+  it("extractCantonErrorCode finds real codes, falls back generically", async () => {
+    const { extractCantonErrorCode } = await import("./fault.js");
+    assert.equal(
+      extractCantonErrorCode("GrpcClientError: INVALID_ARGUMENT/IMPORT_ACS_ERROR(8,xx): bad"),
+      "IMPORT_ACS_ERROR",
+    );
+    assert.equal(
+      extractCantonErrorCode("warn: ACS_COMMITMENT_MISMATCH detected"),
+      "ACS_COMMITMENT_MISMATCH",
+    );
+    assert.equal(
+      extractCantonErrorCode(
+        "GrpcClientError: INVALID_ARGUMENT/PROTO_DESERIALIZATION_FAILURE(8,a252): bad proto",
+      ),
+      "PROTO_DESERIALIZATION_FAILURE",
+    );
+    assert.equal(extractCantonErrorCode("something exploded"), "ACS_IMPORT_FAILED");
+  });
+
+  it("diagnoseRealAcsImportFault carries real error lines + rollback path", async () => {
+    const { diagnoseRealAcsImportFault } = await import("./fault.js");
+    const d = diagnoseRealAcsImportFault(
+      "Alice::x",
+      "ERROR IMPORT_ACS_ERROR(8): snapshot corrupt\nsecond line",
+      "/runs/x/acs/f.gz.good",
+      "/runs/x/logs/import_acs.log",
+    );
+    assert.equal(d.code, "IMPORT_ACS_ERROR");
+    assert.match(d.summary, /REAL/);
+    assert.ok(d.observed[0]!.includes("snapshot corrupt"));
+    assert.ok(d.nextActions.some((a) => a.includes(".good")));
+    assert.equal(d.safeStop, true);
+  });
+
+  it("corruptSnapshot is deterministic and always changes the file", async () => {
+    const { corruptSnapshot } = await import("./runner/canton.js");
+    const { writeFileSync, readFileSync } = await import("node:fs");
+    const dir = mkdtempSync(join(tmpdir(), "cro-corrupt-"));
+    try {
+      const f = join(dir, "snap.gz");
+      const orig = Buffer.from("0123456789abcdef0123456789abcdef");
+      writeFileSync(f, orig);
+      corruptSnapshot(f);
+      const once = readFileSync(f);
+      assert.notDeepEqual(once, orig);
+      // deterministic: same input -> same corrupted output
+      writeFileSync(f, orig);
+      corruptSnapshot(f);
+      assert.deepEqual(readFileSync(f), once);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});

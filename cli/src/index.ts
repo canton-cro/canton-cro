@@ -210,6 +210,13 @@ program
   .description("Retry failed step (or continue pending) and finish the run")
   .requiredOption("--run <id>", "Run id")
   .action(async (opts: { run: string }) => {
+    // Reload config.json so recovery edits (e.g. faultInjection back to
+    // "none" after a drill) take effect — state.config is a snapshot from
+    // the failed apply and would otherwise re-inject the fault.
+    const cfg = loadConfig(opts.run);
+    const state = loadState(opts.run);
+    state.config = cfg;
+    saveState(state);
     const result = await runMachine(opts.run, "resume");
     console.log(result.message);
     process.exitCode = result.exitCode;
