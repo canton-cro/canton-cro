@@ -6,6 +6,7 @@ Open-source CLI for **party/participant recovery orchestration** on Canton (offl
 
 | Piece | Path |
 |-------|------|
+| Proje rehberi (aşamalar + vibe-coding promptlar) | [`notes/canton-recovery-orchestration-rehber.html`](notes/canton-recovery-orchestration-rehber.html) |
 | Manual baseline (13 steps) | [`docs/manual-baseline.md`](docs/manual-baseline.md) |
 | Local 2-participant env | [`localnet/`](localnet/) |
 | Happy-path CLI + fault drill | [`cli/`](cli/) |
