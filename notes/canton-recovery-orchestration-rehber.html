@@ -361,11 +361,13 @@
           CLI gerçek Canton 3.5.8'e karşı 13 adımı uçtan uca koşuyor, preflight ortamı
           canlı yokluyor, fault drill gerçek hata üretip gerçek kurtarma yapıyor.
           CI'da 3 job da yeşil — <strong>gerçek fault drill GitHub Actions'ta (ubuntu)
-          ilk denemede geçti</strong>. <strong>Sıradaki iş: A9</strong> — demo video +
-          threat-model + runbook; sonra <strong>A5</strong> grant proposal PR.
+          ilk denemede geçti</strong>. <strong>A9 dokümanları tamam</strong>
+          (threat-model + runbook + video storyboard'u repoda); kalan tek insan işi
+          <strong>video çekimi</strong> (storyboard hazır). Sonra <strong>A5</strong>
+          grant proposal PR.
         </p>
         <div class="progress-track" aria-hidden="true">
-          <div class="progress-fill" style="width: 88%;"></div>
+          <div class="progress-fill" style="width: 93%;"></div>
         </div>
         <p style="font-size:.92rem;color:var(--muted);margin:0 0 1rem;">
           Kabaca ilerleme: teknik PoC + kanıtlar tamam; kalan iş paketleme (video,
@@ -417,8 +419,10 @@
             </tr>
             <tr>
               <td>A9 · Demo + threat model + runbook</td>
-              <td><span class="badge badge-next">SIRADA</span></td>
-              <td>Kanıtlar hazır (fault-drill çıktıları video senaryosunun kendisi).</td>
+              <td><span class="badge badge-partial">Dokümanlar TAMAM</span></td>
+              <td><code>docs/threat-model.md</code> + <code>docs/runbook.md</code> +
+              <code>docs/demo-video-storyboard.md</code> repoda. Kalan: video ÇEKİMİ
+              (insan işi, storyboard'u takip et).</td>
             </tr>
             <tr>
               <td>5 · Grant PR (A5)</td>
@@ -673,9 +677,19 @@ cro resume --run r1      # kaldığı yerden (config reload'lu)</div>
       </div>
 
       <div class="phase card">
-        <div class="phase-num">AŞAMA A9 · SIRADA</div>
-        <span class="phase-status"><span class="badge badge-next">ŞİMDİ BUNU YAP</span></span>
+        <div class="phase-num">AŞAMA A9 · DOKÜMANLAR TAMAM, VİDEO KALDI</div>
+        <span class="phase-status"><span class="badge badge-partial">Video çekimi kaldı</span></span>
         <h3>Demo video + threat model + runbook (grant paketlemesi)</h3>
+        <div class="callout ok" style="margin-top:.5rem;">
+          <strong>2026-07-16 durum</strong>
+          Üç doküman repoda: <code>docs/threat-model.md</code> (neye dokunuyoruz /
+          asla dokunmadıklarımız + fail-safe felsefesi), <code>docs/runbook.md</code>
+          (preflight okuma tablosu + FAILED import 7-adımlı kurtarma prosedürü +
+          troubleshooting), <code>docs/demo-video-storyboard.md</code> (6 sahne,
+          caption metinleri, çekim/kurgu notları). README'de "Demo video" bölümü açıldı.
+          <strong>Kalan tek iş: videoyu storyboard'a göre çekmek</strong> (insan işi) ve
+          linki README'ye koymak.
+        </div>
         <div class="meta-row">
           <span class="pill">amaç: kanıtı anlatılabilir yap</span>
           <span class="pill">çıktı: video + threat-model.md + runbook.md</span>
@@ -736,14 +750,14 @@ cro resume --run r1      # kaldığı yerden (config reload'lu)</div>
         <tbody>
           <tr>
             <td>1</td>
-            <td><strong>Demo video + threat-model.md + runbook.md</strong></td>
-            <td><span class="badge badge-next">Şimdi</span></td>
-            <td>A9</td>
+            <td><strong>Demo videoyu çek</strong> (storyboard hazır: <code>docs/demo-video-storyboard.md</code>) + linki README'ye koy</td>
+            <td><span class="badge badge-next">Şimdi (insan işi)</span></td>
+            <td>— (storyboard'u takip et)</td>
           </tr>
           <tr>
             <td>2</td>
-            <td>Grant proposal taslağı (AI-slop kurallarıyla) + PR</td>
-            <td>A9 sonrası</td>
+            <td><strong>Grant proposal taslağı</strong> (AI-slop kurallarıyla) + PR</td>
+            <td><span class="badge badge-next">Şimdi (videoyla paralel olabilir)</span></td>
             <td>A5</td>
           </tr>
           <tr>
@@ -848,29 +862,21 @@ Bug bulundu+düzeltildi: resume config reload etmiyordu (fault'u tekrar enjekte 
 CI: live-fault-drill job'ı — ubuntu'da ilk denemede yeşil (artifact'lı).</div>
       </div>
 
-      <div class="card" style="margin-bottom:1rem;border:2px solid var(--accent);">
-        <span class="tag tag-warn">Prompt A9 — Demo + threat model (SIRADA)</span>
-        <span class="badge badge-next">Şimdi bunu kullan</span>
-        <div class="prompt">Grant öncesi paketleme. PoC + kanıtlar hazır; YENİ İDDİA ÜRETME, olanı anlat.
+      <div class="card" style="margin-bottom:1rem;">
+        <span class="tag tag-ok">Prompt A9 — Demo + threat model</span>
+        <span class="badge badge-partial">Dokümanlar tamam (2026-07-16); video çekimi kaldı</span>
+        <div class="prompt">TAMAMLANDI (dokümanlar): docs/threat-model.md + docs/runbook.md +
+docs/demo-video-storyboard.md + README "Demo video" bölümü.
+Hepsi run-log kanıtlarına referanslı; yeni iddia yok; em-dash yok.
 
-GÖREV:
-1) 2-4 dk demo video storyboard + çekim script'i (README'ye link bölümü):
-   akış = live-fault-drill.sh: taşı → boz → gerçek hata → güvenli dur →
-   temizlik kanıtı → restore → resume → tamam. Kanıt dosyalarını ekranda göster
-   (diagnosis.json, state.json, CRO_ASSERT_OK).
-2) docs/threat-model.md: key'e DOKUNMUYORUZ; dokunduklarımız: admin/ledger API
-   (remote console), ACS snapshot dosyaları, topology tx'leri. Fail-safe preflight
-   felsefesi (ölü ortam asla yeşil değil). Kısa, operatör dilinde.
-3) docs/runbook.md: run-log A8 rollback özetinin genişletilmiş hali
-   (preflight → apply → FAILED import prosedürü → restore → resume).
-
-KISIT: dashboard/observability ekleme; em-dash kullanma (—); iddiaları
-run-log'daki kanıtlara referansla.</div>
+KALAN (insan işi): videoyu storyboard'a göre çek (6 sahne, ~3 dk;
+live-fault-drill.sh akışı) ve linki README "Demo video" bölümüne koy.
+Çekim öncesi hazırlık listesi storyboard'un başında.</div>
       </div>
 
-      <div class="card">
+      <div class="card" style="border:2px solid var(--accent);">
         <span class="tag tag-warn">Prompt A5 — Grant metni (+ AI-slop bot koruması)</span>
-        <span class="badge badge-todo">A9 sonrası</span>
+        <span class="badge badge-next">SIRADA — şimdi bunu kullan</span>
         <div class="prompt">PoC hazır (A6+A7+A8 kanıtlı). canton-dev-fund proposal taslağı yaz.
 
 Kurallar:
@@ -967,9 +973,10 @@ AI-SLOP / aipricheck.yml KISITLARI (zorunlu):
         <label><input type="checkbox" checked /> CI drill'leri yeşil (stub + ping + gerçek fault, artifact'lı — 3/3)</label>
         <label><input type="checkbox" checked /> README kanıt bölümü (A–D, C2/C3 gerçek drill'ler)</label>
         <label><input type="checkbox" checked /> Canton adapter (gerçek export/import)</label>
-        <label><input type="checkbox" /> Demo video (A9)</label>
-        <label><input type="checkbox" /> Threat model: key'e dokunulmuyor yazılı (A9)</label>
-        <label><input type="checkbox" /> Runbook.md operatör prosedürü (A9)</label>
+        <label><input type="checkbox" /> Demo video ÇEKİLDİ + link README'de (storyboard hazır)</label>
+        <label><input type="checkbox" checked /> Threat model: key'e dokunulmuyor yazılı (docs/threat-model.md)</label>
+        <label><input type="checkbox" checked /> Runbook.md operatör prosedürü (docs/runbook.md)</label>
+        <label><input type="checkbox" checked /> Video storyboard + çekim script'i (docs/demo-video-storyboard.md)</label>
         <label><input type="checkbox" /> Grant taslağı dar scope + 400–650k CC (A5)</label>
         <label><input type="checkbox" /> Proposal'da em-dash / AI-slop / uydurma jargon yok (A5)</label>
         <label><input type="checkbox" /> Rakip ayrım cümleleri eklendi (A5)</label>

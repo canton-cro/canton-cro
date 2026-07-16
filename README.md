@@ -15,6 +15,18 @@ Open-source CLI for **party/participant recovery orchestration** on Canton (offl
 | Happy-path CLI + fault drill | [`cli/`](cli/) |
 | **Real Canton adapter (A6)** | [`cli/src/runner/canton.ts`](cli/src/runner/canton.ts) + [`cli/scripts/live-drill.sh`](cli/scripts/live-drill.sh) |
 | CI LocalNet / fault drill | [`.github/workflows/localnet-drill.yml`](.github/workflows/localnet-drill.yml) |
+| **Threat model** (what we touch, what we never touch) | [`docs/threat-model.md`](docs/threat-model.md) |
+| **Operator runbook** (incl. failed-import recovery) | [`docs/runbook.md`](docs/runbook.md) |
+
+## Demo video
+
+_Coming soon._ Recording plan and scene-by-scene script:
+[`docs/demo-video-storyboard.md`](docs/demo-video-storyboard.md). The video
+follows [`cli/scripts/live-fault-drill.sh`](cli/scripts/live-fault-drill.sh)
+end to end: break -> real Canton error -> safe stop -> clean-target proof ->
+restore -> resume -> completed. Everything shown on screen exists as evidence
+in [`docs/manual-baseline-run-log.md`](docs/manual-baseline-run-log.md) and
+`localnet/out/`.
 
 ## Quick start (CLI)
 

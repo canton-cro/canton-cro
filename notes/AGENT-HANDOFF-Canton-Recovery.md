@@ -34,11 +34,12 @@ Canton Network Development Fund için başvurulacak açık kaynak **CLI / ops ar
 | **A8 Gerçek fault drill** | ✅ boz → GERÇEK hata → diagnosis → temiz-hedef kanıtı → restore → resume → tamam | `live-fault-drill.sh`, run-log A8 eki, `localnet/out/fault-a8-diagnosis.json` |
 | CI | ✅ 3 job yeşil (stub drill / ping / **gerçek fault drill**, artifact'lı) | `.github/workflows/localnet-drill.yml` |
 | Unit testler | ✅ 23/23 | `cli/src/*.test.ts` |
-| **A9 Demo + threat-model + runbook** | ⬜ **SIRADAKİ İŞ** | rehber Prompt A9 |
-| A5 Grant proposal PR | ⬜ A9 sonrası | rehber Prompt A5 |
+| **A9 Demo + threat-model + runbook** | 🟡 Dokümanlar ✅ (`docs/threat-model.md`, `docs/runbook.md`, `docs/demo-video-storyboard.md`); **video ÇEKİMİ kaldı** (insan işi) | README "Demo video" bölümü |
+| **A5 Grant proposal PR** | ⬜ **SIRADAKİ AGENT İŞİ** (videoyla paralel yürüyebilir) | rehber Prompt A5 |
 | Champion süreci | ⬜ Kullanıcı ayrıca yürütüyor (PR → needs-champion) | — |
 
-**Sıradaki iş sırası:** A9 (video storyboard + `docs/threat-model.md` + `docs/runbook.md`) → A5 (grant metni, AI-slop kurallarıyla) → PR → needs-champion.
+**Sıradaki iş sırası:** (insan) videoyu storyboard'a göre çek + linki README'ye koy || (agent) A5 grant metni (AI-slop kurallarıyla, outline → onay → full) → PR → needs-champion.
+**Ayrıca:** arkadaş (emrhnyz) Windows uyumluluğunu doğrulayıp düzeltti (canton.bat resolve, cygpath native path, Scala path escape — `localnet/ISSUES.md` #7-9) ve Apache-2.0 LICENSE + NOTICE ekledi.
 
 ---
 
