@@ -5,7 +5,7 @@
 **Created:** 2026-07-16
 **Label:** node-deployment-operations
 
-**Champion:** open to any Tech & Ops Committee member organization (e.g., Digital Asset, IntellectEU, Cumberland); to be confirmed during review
+**Champion:** open to any Tech & Ops Committee member organization (e.g., Digital Asset, IntellectEU, Cumberland); determined during committee review
 
 ---
 
