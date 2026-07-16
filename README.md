@@ -2,6 +2,8 @@
 
 Open-source CLI for **party/participant recovery orchestration** on Canton (offline party replication, backup validation, restore drills). No keys, no wallet, no dashboard.
 
+**License:** [Apache-2.0](LICENSE)
+
 ## Status
 
 | Piece | Path |

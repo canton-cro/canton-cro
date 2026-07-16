@@ -1,8 +1,9 @@
 {
   "name": "cro",
   "version": "0.1.0",
-  "description": "Canton Recovery Orchestration CLI (happy-path skeleton)",
+  "description": "Canton Recovery Orchestration CLI (offline party replication drills)",
   "private": true,
+  "license": "Apache-2.0",
   "type": "module",
   "bin": {
     "cro": "./dist/index.js"
