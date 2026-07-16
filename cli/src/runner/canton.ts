@@ -7,13 +7,31 @@ import {
   statSync,
   writeFileSync,
 } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import type { StepId } from "../steps.js";
 import type { RunConfig } from "../state.js";
 import { runDir } from "../state.js";
 import { loadFacts } from "../facts.js";
 import { AcsImportFaultError, diagnoseRealAcsImportFault } from "../fault.js";
 import type { StepContext, StepResult } from "./stub.js";
+
+/**
+ * On Windows, Node spawn cannot exec the Unix `bin/canton` shim — use canton.bat.
+ * Git Bash can run the shim; cro init may still store the Unix path in config.
+ */
+export function resolveCantonExecutable(bin: string): string {
+  if (process.platform !== "win32") return bin;
+  if (/\.(bat|cmd)$/i.test(bin)) return bin;
+  const base = bin.replace(/\\/g, "/").split("/").pop() ?? "";
+  if (base !== "canton") return bin;
+  const bat = join(dirname(bin), "canton.bat");
+  return existsSync(bat) ? bat : bin;
+}
+
+/** Embed paths in Scala string literals (backslash = escape → use /). */
+export function forScalaPath(p: string): string {
+  return p.replace(/\\/g, "/");
+}
 
 /**
  * Real Canton adapter (A6, minimal v1).
@@ -127,7 +145,7 @@ function stepBody(stepId: StepId, p: ScriptParams): string {
   switch (stepId) {
     case "vet_packages":
       return `
-croTarget.dars.upload("${p.darPath}")
+croTarget.dars.upload("${forScalaPath(p.darPath)}")
 val croMainPkg = croSource.dars.list(filterName = "CantonExamples").headOption.map(_.mainPackageId).getOrElse {
   println("CRO_ERR CantonExamples DAR not present on source"); sys.exit(1); ""
 }
@@ -187,7 +205,7 @@ croSource.parties.export_party_acs(
   synchronizerId = croSyncId,
   targetParticipantId = croTarget.id,
   beginOffsetExclusive = ${off}L,
-  exportFilePath = "${p.acsFile}",
+  exportFilePath = "${forScalaPath(p.acsFile)}",
 )
 println("CRO_VAR acsExported=true")
 `;
@@ -209,7 +227,7 @@ println("CRO_VAR pruningRestored=noop")
 croTarget.parties.import_party_acs(
   synchronizerId = croSyncId,
   party = Some(croParty),
-  importFilePath = "${p.acsFile}",
+  importFilePath = "${forScalaPath(p.acsFile)}",
 )
 println("CRO_VAR acsImported=true")
 `;
@@ -258,12 +276,16 @@ export function execConsoleScript(
   settings: CantonRunnerSettings,
   scriptPath: string,
 ): SpawnSyncReturns<string> {
+  const bin = resolveCantonExecutable(settings.bin);
+  const useShell = process.platform === "win32" && /\.(bat|cmd)$/i.test(bin);
   return spawnSync(
-    settings.bin,
+    bin,
     ["run", scriptPath, "-c", settings.remoteConf, "--log-level-stdout=WARN"],
     {
       encoding: "utf8",
       timeout: settings.stepTimeoutMs ?? 300_000,
+      // .bat launchers require a shell on Windows.
+      shell: useShell,
       env: {
         ...process.env,
         JAVA_TOOL_OPTIONS: process.env.JAVA_TOOL_OPTIONS ?? LOCALE_JAVA_OPTS,

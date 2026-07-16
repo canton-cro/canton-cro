@@ -17,6 +17,16 @@ RUN_ID="${1:-live-happy}"
 OUT="$ROOT/localnet/out"
 LOCALE_OPTS="-Duser.language=en -Duser.country=US -Dfile.encoding=UTF-8"
 
+# Git Bash paths (/c/...) inside JAVA_TOOL_OPTIONS / Node args are NOT converted
+# for Windows Java. Use mixed native paths (C:/...) when handing off.
+native_path() {
+  if command -v cygpath >/dev/null 2>&1; then
+    cygpath -m "$1"
+  else
+    printf '%s\n' "$1"
+  fi
+}
+
 mkdir -p "$OUT"
 
 # --- Canton OSS (reuse localnet-drill.sh download logic) ---------------------
@@ -64,7 +74,10 @@ echo "daemon ready."
 # --- 2) Step 0: party + contract on source ------------------------------------
 PARTY_HINT="alice-$$"
 SETUP_OUT="$OUT/live-setup.out"
-JAVA_TOOL_OPTIONS="$LOCALE_OPTS \"-Dcro.dar=$DAR\" \"-Dcro.partyHint=$PARTY_HINT\"" \
+DAR_NATIVE="$(native_path "$DAR")"
+REMOTE_NATIVE="$(native_path "$REMOTE_CONF")"
+CANTON_BIN_NATIVE="$(native_path "$CANTON_BIN")"
+JAVA_TOOL_OPTIONS="$LOCALE_OPTS \"-Dcro.dar=$DAR_NATIVE\" \"-Dcro.partyHint=$PARTY_HINT\"" \
   "$CANTON_BIN" run "$ROOT/localnet/scripts/step0-setup.sc" \
   -c "$REMOTE_CONF" --log-level-stdout=WARN | tee "$SETUP_OUT"
 grep -q "CRO_SETUP_OK" "$SETUP_OUT" || { echo "live-drill FAIL: setup"; exit 1; }
@@ -74,17 +87,22 @@ echo "party: $PARTY"
 # --- 3) CRO init + plan + preflight + apply (real runner) ----------------------
 cd "$ROOT/cli"
 rm -rf "runs/$RUN_ID"  # fresh run: no stale state/vars from earlier drills
-# Call tsx directly (no npm wrapper): npm run may hit the network and flake.
-CRO="node node_modules/.bin/tsx src/index.ts"
-$CRO init --run "$RUN_ID" --party-id "$PARTY" \
-  --runner canton --canton-bin "$CANTON_BIN" --remote-conf "$REMOTE_CONF" \
-  --dar-path "$DAR" --storage-kind h2
-$CRO plan --run "$RUN_ID"
-$CRO preflight --run "$RUN_ID"
-$CRO apply --run "$RUN_ID"
+# Prefer tsx CLI entry (Windows: node_modules/.bin/tsx is a bash shim — do not
+# pass it to `node`). Fall back to dist/cli.mjs.
+if [[ -f node_modules/tsx/dist/cli.mjs ]]; then
+  cro() { node node_modules/tsx/dist/cli.mjs src/index.ts "$@"; }
+else
+  cro() { ./node_modules/.bin/tsx src/index.ts "$@"; }
+fi
+cro init --run "$RUN_ID" --party-id "$PARTY" \
+  --runner canton --canton-bin "$CANTON_BIN_NATIVE" --remote-conf "$REMOTE_NATIVE" \
+  --dar-path "$DAR_NATIVE" --storage-kind h2
+cro plan --run "$RUN_ID"
+cro preflight --run "$RUN_ID"
+cro apply --run "$RUN_ID"
 
 # --- 4) Idempotency: second apply is a no-op -----------------------------------
-SECOND="$($CRO apply --run "$RUN_ID")"
+SECOND="$(cro apply --run "$RUN_ID")"
 echo "$SECOND"
 echo "$SECOND" | grep -q "already complete" || {
   echo "live-drill FAIL: second apply was not an idempotent no-op"

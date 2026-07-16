@@ -45,3 +45,21 @@
 - **Neden:** Canton, ACS import'u (repair sınıfı işlem) memory storage'da desteklemiyor — `01-simple-topology` party replication için yetersiz
 - **Fix:** `localnet/cro-topology.conf` — participant'lar H2 file storage (`config/storage/h2.conf` mixin + `examples/07-repair` kalıbı), portlar simple-topology ile aynı
 - **Detay:** `docs/manual-baseline-run-log.md`
+
+## 7) Windows + Git Bash — DAR path JAVA_TOOL_OPTIONS içinde kırılıyor
+
+- **Belirti:** `No such file [/c/Users/.../CantonExamples.dar]` (daemon ayağa kalkıyor, step0 fail)
+- **Neden:** MSYS argv path dönüşümü `JAVA_TOOL_OPTIONS` içindeki `/c/...` yollarına uygulanmıyor; Windows Java bu yolu açamıyor
+- **Fix:** `cli/scripts/live-drill.sh` / `live-fault-drill.sh` içinde `cygpath -m` ile native path (`C:/...`) verilmeli (yamasız tekrar koşum kırılır)
+
+## 8) Windows — Node `bin/canton` spawn edemiyor
+
+- **Belirti:** preflight `live probe failed (exit=spawn-error)`; probe log boş
+- **Neden:** Unix shim `bin/canton`; Node Windows’ta bunu doğrudan exec edemez → `bin/canton.bat` + `shell: true` gerekir
+- **Fix:** `cli/src/runner/canton.ts` → `resolveCantonExecutable()`
+
+## 9) Windows — Scala script path’te `\` escape kırılıyor
+
+- **Belirti:** `export_acs.sc: expected ([btnfr'\\\\\"]] | UnicodeEscape)` path `C:\Users\...`
+- **Neden:** Scala string’de `\U` unicode escape
+- **Fix:** `forScalaPath()` — script’e gömülen yollarda `/` kullan

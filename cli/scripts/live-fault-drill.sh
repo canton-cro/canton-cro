@@ -18,6 +18,15 @@ RUN_ID="${1:-fault-a8}"
 OUT="$ROOT/localnet/out"
 LOCALE_OPTS="-Duser.language=en -Duser.country=US -Dfile.encoding=UTF-8"
 
+# See live-drill.sh — Git Bash /c/... paths must be native for Windows Java/Node.
+native_path() {
+  if command -v cygpath >/dev/null 2>&1; then
+    cygpath -m "$1"
+  else
+    printf '%s\n' "$1"
+  fi
+}
+
 mkdir -p "$OUT"
 
 if [[ ! -x "$CANTON_BIN" ]]; then
@@ -64,7 +73,10 @@ echo "daemon ready."
 # --- 2) Party + contract -------------------------------------------------------
 PARTY_HINT="alice-$$"
 SETUP_OUT="$OUT/fault-setup.out"
-JAVA_TOOL_OPTIONS="$LOCALE_OPTS \"-Dcro.dar=$DAR\" \"-Dcro.partyHint=$PARTY_HINT\"" \
+DAR_NATIVE="$(native_path "$DAR")"
+REMOTE_NATIVE="$(native_path "$REMOTE_CONF")"
+CANTON_BIN_NATIVE="$(native_path "$CANTON_BIN")"
+JAVA_TOOL_OPTIONS="$LOCALE_OPTS \"-Dcro.dar=$DAR_NATIVE\" \"-Dcro.partyHint=$PARTY_HINT\"" \
   "$CANTON_BIN" run "$ROOT/localnet/scripts/step0-setup.sc" \
   -c "$REMOTE_CONF" --log-level-stdout=WARN | tee "$SETUP_OUT"
 grep -q "CRO_SETUP_OK" "$SETUP_OUT" || { echo "fault-drill FAIL: setup"; exit 1; }
@@ -74,14 +86,18 @@ echo "party: $PARTY"
 # --- 3) Init + drill (REAL fault at import_acs) --------------------------------
 cd "$ROOT/cli"
 rm -rf "runs/$RUN_ID"
-CRO="node node_modules/.bin/tsx src/index.ts"
-$CRO init --run "$RUN_ID" --party-id "$PARTY" \
-  --runner canton --canton-bin "$CANTON_BIN" --remote-conf "$REMOTE_CONF" \
-  --dar-path "$DAR" --storage-kind h2
+if [[ -f node_modules/tsx/dist/cli.mjs ]]; then
+  cro() { node node_modules/tsx/dist/cli.mjs src/index.ts "$@"; }
+else
+  cro() { ./node_modules/.bin/tsx src/index.ts "$@"; }
+fi
+cro init --run "$RUN_ID" --party-id "$PARTY" \
+  --runner canton --canton-bin "$CANTON_BIN_NATIVE" --remote-conf "$REMOTE_NATIVE" \
+  --dar-path "$DAR_NATIVE" --storage-kind h2
 
 # cro drill: apply with fault, asserts SAFE STOP + import_acs=failed +
 # reconnect still pending + diagnosis.json written (exits 0 on drill PASS).
-$CRO drill --run "$RUN_ID" --fault broken-acs-import
+cro drill --run "$RUN_ID" --fault broken-acs-import
 
 # Diagnosis must carry a REAL Canton code, not the stub text.
 node -e '
@@ -112,7 +128,7 @@ node -e '
 echo "rollback done: snapshot restored, fault disarmed"
 
 # --- 6) Resume: recovery completes the replication ------------------------------
-$CRO resume --run "$RUN_ID"
+cro resume --run "$RUN_ID"
 
 # --- 7) Final assert: replication actually landed --------------------------------
 ASSERT_OUT="$OUT/fault-assert.out"
