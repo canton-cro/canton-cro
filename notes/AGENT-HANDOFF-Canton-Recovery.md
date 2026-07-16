@@ -4,6 +4,7 @@
 **Amaç:** Bu dosyayı yeni bir agent'a vererek projeyi **aynı bağlam seviyesinde** devam ettirmek.
 **Dil:** Kullanıcı Türkçe konuşuyor; teknik terimler İngilizce kalabilir.
 **Repo:** https://github.com/canton-cro/canton-cro (public, org: `canton-cro`)
+**Website:** https://www.canton-cro.xyz — kaynak: https://github.com/canton-cro/website (tek `index.html`; GitHub Pages DEĞİL, harici host — deploy'u arkadaş yapıyor; içerik 2026-07-16'da repo gerçeğiyle eşitlendi)
 **Rehber (aşamalar + prompt setleri):** `notes/canton-recovery-orchestration-rehber.html` — durum banner'ı ve promptlar 2026-07-16 itibarıyla güncel.
 
 ---

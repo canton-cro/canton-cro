@@ -3,7 +3,7 @@
 Open-source CLI for **party/participant recovery orchestration** on Canton (offline party replication, backup validation, restore drills). No keys, no wallet, no dashboard.
 
 **Repo:** https://github.com/canton-cro/canton-cro  
-**License:** [Apache-2.0](LICENSE)
+**Website:** [canton-cro.xyz](https://www.canton-cro.xyz) · **License:** [Apache-2.0](LICENSE)
 
 ```bash
 git clone https://github.com/canton-cro/canton-cro.git
